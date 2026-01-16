@@ -5,6 +5,7 @@ public class PlayerZeroGMovement : MonoBehaviour
 {
     [Header("References")]
     public PlayerInputHandler inputHandler;
+    public Transform cameraRig; // Assign CameraPivot or CameraRig transform
 
     [Header("Movement Settings")]
     public float thrustPower = 10f;
@@ -12,8 +13,7 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float brakeForce = 5f;
 
     [Header("Rotation Settings")]
-    public float mouseSensitivity = 2f;
-    public float rollSpeed = 60f; // degrees per second
+    public float alignmentSpeed = 10f; // How fast player aligns to camera
 
     [Header("Noise Settings")]
     public float noiseIntensity = 1f;
@@ -25,23 +25,20 @@ public class PlayerZeroGMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
+        rb.linearDamping = 0.2f;
+        rb.angularDamping = 0.2f;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         if (inputHandler == null)
             inputHandler = GetComponent<PlayerInputHandler>();
 
         noiseEmitter = GetComponent<NoiseEmitter>();
-
-        Cursor.lockState = CursorLockMode.Locked;
-    }
-
-    private void Update()
-    {
-        ApplyRotation();
     }
 
     private void FixedUpdate()
     {
         ApplyMovement();
+        AlignWithCamera();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -49,33 +46,27 @@ public class PlayerZeroGMovement : MonoBehaviour
         EmitNoise();
     }
 
-    private void EmitNoise()
-    {
-        if (noiseEmitter != null)
-        {
-            // 1 = normal, >1 = loud, <1 = quiet
-            noiseEmitter.EmitNoise(noiseIntensity);
-        }
-    }
-
-    private void ApplyRotation()
-    {
-        Vector2 look = inputHandler.LookInput;
-        float yaw = look.x * mouseSensitivity;
-        float pitch = -look.y * mouseSensitivity;
-
-        transform.Rotate(pitch, yaw, 0f, Space.Self);
-
-        if (Mathf.Abs(inputHandler.RollInput) > 0.01f)
-            transform.Rotate(Vector3.forward, -inputHandler.RollInput * rollSpeed * Time.deltaTime, Space.Self);
-    }
-
+    // -----------------------
+    // Movement (camera-relative)
+    // -----------------------
     private void ApplyMovement()
     {
-        Vector3 inputVector = new Vector3(inputHandler.MoveInput.x, inputHandler.VerticalInput, inputHandler.MoveInput.y);
-        Vector3 thrustDirection = transform.TransformDirection(inputVector);
+        if (cameraRig == null || inputHandler == null)
+            return;
 
-        Vector3 desiredVelocity = rb.linearVelocity + thrustDirection * thrustPower * Time.fixedDeltaTime;
+        Vector3 inputVector = new Vector3(
+            inputHandler.MoveInput.x,
+            inputHandler.VerticalInput,
+            inputHandler.MoveInput.y
+        );
+
+        Vector3 thrustDirection =
+            cameraRig.right   * inputVector.x +
+            cameraRig.up      * inputVector.y +
+            cameraRig.forward * inputVector.z;
+
+        Vector3 desiredVelocity =
+            rb.linearVelocity + thrustDirection * thrustPower * Time.fixedDeltaTime;
 
         if (desiredVelocity.magnitude > maxSpeed)
             desiredVelocity = desiredVelocity.normalized * maxSpeed;
@@ -83,6 +74,41 @@ public class PlayerZeroGMovement : MonoBehaviour
         rb.linearVelocity = desiredVelocity;
 
         if (inputHandler.IsBraking)
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, brakeForce * Time.fixedDeltaTime);
+        {
+            rb.linearVelocity = Vector3.Lerp(
+                rb.linearVelocity,
+                Vector3.zero,
+                brakeForce * Time.fixedDeltaTime
+            );
+        }
+    }
+
+    // -----------------------
+    // Rotation (camera authority)
+    // -----------------------
+    private void AlignWithCamera()
+    {
+        if (cameraRig == null)
+            return;
+
+        Quaternion targetRotation =
+            Quaternion.LookRotation(cameraRig.forward, cameraRig.up);
+
+        rb.MoveRotation(
+            Quaternion.Slerp(
+                rb.rotation,
+                targetRotation,
+                alignmentSpeed * Time.fixedDeltaTime
+            )
+        );
+    }
+
+    // -----------------------
+    // Noise
+    // -----------------------
+    private void EmitNoise()
+    {
+        if (noiseEmitter != null)
+            noiseEmitter.EmitNoise(noiseIntensity);
     }
 }
