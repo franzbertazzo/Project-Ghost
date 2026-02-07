@@ -561,6 +561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a12e7a8eceab644d848ce18d73fc6dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraFOVPunch: {fileID: 1207058030}
   inputHandler: {fileID: 327274123}
   cameraRig: {fileID: 1024466601}
   acceleration: 100
@@ -1303,7 +1304,7 @@ Transform:
   m_GameObject: {fileID: 1207058023}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.74, y: 0.43, z: -2}
+  m_LocalPosition: {x: 1.233, y: 0.43, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1442,11 +1443,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFOVPunch
   playerRb: {fileID: 327274120}
-  cam: {fileID: 1207058027}
-  baseFov: 70
-  maxFov: 90
-  speedForMax: 12
-  lerpSpeed: 6
+  baseFOV: 72
+  fovLerpSpeed: 10
+  speedFOVMax: 10
+  speedForMaxFOV: 15
+  dashFOVBoost: 30
+  dashFOVDuration: 0.15
 --- !u!1 &1276352617
 GameObject:
   m_ObjectHideFlags: 0

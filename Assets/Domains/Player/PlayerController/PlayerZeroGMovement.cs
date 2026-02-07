@@ -3,6 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerZeroGMovement : MonoBehaviour
 {
+    [SerializeField] private CameraFOVPunch cameraFOVPunch; // Optional reference for dash FOV effect
+
     [Header("References")]
     public PlayerInputHandler inputHandler;
     public Transform cameraRig; // Assign CameraPivot or CameraRig transform
@@ -176,6 +178,7 @@ public class PlayerZeroGMovement : MonoBehaviour
             return;
 
         ApplyDashImpulse(velocity.normalized, airDashSpeed);
+        cameraFOVPunch?.TriggerDashFOV();
     }
 
     bool TryGetSurface(out Vector3 surfaceNormal)
