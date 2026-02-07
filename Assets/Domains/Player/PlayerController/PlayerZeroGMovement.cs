@@ -7,10 +7,22 @@ public class PlayerZeroGMovement : MonoBehaviour
     public PlayerInputHandler inputHandler;
     public Transform cameraRig; // Assign CameraPivot or CameraRig transform
 
+    [Header("Arcade Control")]
+    public float acceleration = 25f;      // how fast you gain speed
+    public float directionalBrake = 18f;  // how fast you cancel unwanted velocity
+    public float maxSpeed = 12f;           // higher than before
+    public float inputResponsiveness = 1.5f; // exaggerates input
+
+
     [Header("Movement Settings")]
     public float thrustPower = 10f;
-    public float maxSpeed = 6f;
     public float brakeForce = 5f;
+
+    [Header("Precision / Brake Mode (Shift)")]
+    public float precisionSpeedMultiplier = 0.4f;   // 40% speed
+    public float precisionBrakeMultiplier = 2.5f;   // stronger braking
+    public float precisionAccelerationMultiplier = 0.6f;
+
 
     [Header("Rotation Settings")]
     public float alignmentSpeed = 10f; // How fast player aligns to camera
@@ -54,34 +66,67 @@ public class PlayerZeroGMovement : MonoBehaviour
         if (cameraRig == null || inputHandler == null)
             return;
 
+        // 1️⃣ Read input
         Vector3 inputVector = new Vector3(
             inputHandler.MoveInput.x,
             inputHandler.VerticalInput,
             inputHandler.MoveInput.y
         );
 
-        Vector3 thrustDirection =
+        inputVector = Vector3.ClampMagnitude(inputVector, 1f);
+        inputVector *= inputResponsiveness;
+
+        // 2️⃣ Camera-relative direction
+        Vector3 desiredDirection =
             cameraRig.right   * inputVector.x +
             cameraRig.up      * inputVector.y +
             cameraRig.forward * inputVector.z;
 
-        Vector3 desiredVelocity =
-            rb.linearVelocity + thrustDirection * thrustPower * Time.fixedDeltaTime;
+        // 3️⃣ Precision mode (Shift)
+        bool precision = inputHandler.IsBraking;
 
-        if (desiredVelocity.magnitude > maxSpeed)
-            desiredVelocity = desiredVelocity.normalized * maxSpeed;
+        float speedCap = precision
+            ? maxSpeed * precisionSpeedMultiplier
+            : maxSpeed;
 
-        rb.linearVelocity = desiredVelocity;
+        float accel = precision
+            ? acceleration * precisionAccelerationMultiplier
+            : acceleration;
 
-        if (inputHandler.IsBraking)
+        float brake = precision
+            ? directionalBrake * precisionBrakeMultiplier
+            : directionalBrake;
+
+        // 4️⃣ Current velocity
+        Vector3 velocity = rb.linearVelocity;
+
+        // Split velocity into wanted / unwanted
+        Vector3 velocityAlongInput =
+            desiredDirection.sqrMagnitude > 0.001f
+            ? Vector3.Project(velocity, desiredDirection)
+            : Vector3.zero;
+
+        Vector3 unwantedVelocity = velocity - velocityAlongInput;
+
+        // 5️⃣ Kill unwanted momentum (arcade control)
+        velocity -= unwantedVelocity * brake * Time.fixedDeltaTime;
+
+        // 6️⃣ Accelerate in desired direction
+        velocity += desiredDirection * accel * Time.fixedDeltaTime;
+
+        // 7️⃣ Soft speed cap
+        if (velocity.magnitude > speedCap)
         {
-            rb.linearVelocity = Vector3.Lerp(
-                rb.linearVelocity,
-                Vector3.zero,
-                brakeForce * Time.fixedDeltaTime
+            velocity = Vector3.Lerp(
+                velocity,
+                velocity.normalized * speedCap,
+                12f * Time.fixedDeltaTime
             );
         }
+
+        rb.linearVelocity = velocity;
     }
+
 
     // -----------------------
     // Rotation (camera authority)

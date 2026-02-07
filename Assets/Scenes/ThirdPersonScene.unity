@@ -468,6 +468,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: d7d81591-7b27-4a8f-9176-4268ae9c0f22
     m_ActionName: 'Player/Look[/Mouse/delta]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 327274123}
+        m_TargetAssemblyTypeName: PlayerInputHandler, Assembly-CSharp
+        m_MethodName: OnBrake
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 07470021-c816-4e20-b9f0-72b5bed46b29
+    m_ActionName: 'Player/Break[/Keyboard/leftShift]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -487,10 +503,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputHandler: {fileID: 327274123}
   cameraRig: {fileID: 1024466601}
+  acceleration: 100
+  directionalBrake: 0.1
+  maxSpeed: 12
+  inputResponsiveness: 1.5
   thrustPower: 7
-  maxSpeed: 6
   brakeForce: 5
-  alignmentSpeed: 10
+  precisionSpeedMultiplier: 0.4
+  precisionBrakeMultiplier: 2.5
+  precisionAccelerationMultiplier: 0.6
+  alignmentSpeed: 20
   noiseIntensity: 1
 --- !u!114 &327274123
 MonoBehaviour:
@@ -830,7 +852,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThirdPersonCameraRig
   target: {fileID: 327274118}
   sensitivity: 0.1
-  rollSpeed: 120
+  rollSpeed: 150
 --- !u!114 &1024466603
 MonoBehaviour:
   m_ObjectHideFlags: 0
