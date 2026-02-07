@@ -119,6 +119,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &84377023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 84377025}
+  - component: {fileID: 84377024}
+  m_Layer: 0
+  m_Name: GameMaster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &84377024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84377023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90d48dc8b3753d44d97041339200d19f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CursorLock
+--- !u!4 &84377025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84377023}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.12195, y: -0, z: 21.89611}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &255816417
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,6 +528,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 07470021-c816-4e20-b9f0-72b5bed46b29
     m_ActionName: 'Player/Break[/Keyboard/leftShift]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 327274123}
+        m_TargetAssemblyTypeName: PlayerInputHandler, Assembly-CSharp
+        m_MethodName: OnDash
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 0e3649a9-c56c-486e-96ba-ded5c2ac3950
+    m_ActionName: 'Player/Dash[/Mouse/rightButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -507,12 +567,20 @@ MonoBehaviour:
   directionalBrake: 0.1
   maxSpeed: 12
   inputResponsiveness: 1.5
-  thrustPower: 7
+  thrustPower: 10
   brakeForce: 5
   precisionSpeedMultiplier: 0.4
   precisionBrakeMultiplier: 2.5
   precisionAccelerationMultiplier: 0.6
-  alignmentSpeed: 20
+  dashImpulse: 100
+  surfaceCheckRadius: 1.2
+  surfaceCheckDistance: 1.5
+  minDashSpeed: 10
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 64
+  dashGraceTime: 0.15
+  alignmentSpeed: 10
   noiseIntensity: 1
 --- !u!114 &327274123
 MonoBehaviour:
@@ -2131,6 +2199,7 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 84377025}
   - {fileID: 1276352619}
   - {fileID: 1948883312}
   - {fileID: 327274118}

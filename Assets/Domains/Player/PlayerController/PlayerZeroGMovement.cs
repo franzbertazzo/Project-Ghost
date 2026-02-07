@@ -13,7 +13,6 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float maxSpeed = 12f;           // higher than before
     public float inputResponsiveness = 1.5f; // exaggerates input
 
-
     [Header("Movement Settings")]
     public float thrustPower = 10f;
     public float brakeForce = 5f;
@@ -23,6 +22,17 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float precisionBrakeMultiplier = 2.5f;   // stronger braking
     public float precisionAccelerationMultiplier = 0.6f;
 
+    [Header("Surface Dash")]
+    public float dashImpulse = 22f;
+    public float surfaceCheckRadius = 1.2f;
+    public float surfaceCheckDistance = 1.5f;
+    public float minDashSpeed = 10f;
+    public LayerMask surfaceMask;
+
+    [Header("Dash Control")]
+    public float dashGraceTime = 0.15f;
+
+    float dashGraceTimer;
 
     [Header("Rotation Settings")]
     public float alignmentSpeed = 10f; // How fast player aligns to camera
@@ -47,10 +57,26 @@ public class PlayerZeroGMovement : MonoBehaviour
         noiseEmitter = GetComponent<NoiseEmitter>();
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        ApplyMovement();
+        if (dashGraceTimer > 0f)
+        {
+            dashGraceTimer -= Time.fixedDeltaTime;
+        }
+        else
+        {
+            ApplyMovement();
+        }
+
         AlignWithCamera();
+    }
+
+    void Update()
+    {
+        if (inputHandler != null && inputHandler.DashPressed)
+        {
+            TrySurfaceDash();
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -125,6 +151,70 @@ public class PlayerZeroGMovement : MonoBehaviour
         }
 
         rb.linearVelocity = velocity;
+    }
+
+    // --------------------------------------------------
+    // SURFACE DASH
+    // --------------------------------------------------
+    void TrySurfaceDash()
+    {
+        Vector3 dashDirection;
+
+        // 1️⃣ Case A: touching a surface → push off
+        if (TryGetSurface(out Vector3 surfaceNormal))
+        {
+            dashDirection = surfaceNormal;
+        }
+        // 2️⃣ Case B: no surface → dash in movement direction
+        else
+        {
+            Vector3 velocity = rb.linearVelocity;
+
+            // If we're basically not moving, do nothing
+            if (velocity.sqrMagnitude < 0.01f)
+                return;
+
+            dashDirection = velocity.normalized;
+        }
+
+        ApplyDashImpulse(dashDirection);
+    }
+
+    bool TryGetSurface(out Vector3 surfaceNormal)
+    {
+        Collider[] colliders = Physics.OverlapSphere(
+            rb.worldCenterOfMass,
+            surfaceCheckRadius,
+            surfaceMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        float closestDistance = float.MaxValue;
+        surfaceNormal = Vector3.zero;
+
+        foreach (var col in colliders)
+        {
+            Vector3 closestPoint = col.ClosestPoint(rb.worldCenterOfMass);
+            Vector3 direction = rb.worldCenterOfMass - closestPoint;
+            float distance = direction.magnitude;
+
+            if (distance < closestDistance && distance > 0.001f)
+            {
+                closestDistance = distance;
+                surfaceNormal = direction.normalized;
+            }
+        }
+
+        return surfaceNormal != Vector3.zero;
+    }
+
+   void ApplyDashImpulse(Vector3 direction)
+    {
+        Debug.Log("DASH! Direction: " + direction);
+        rb.linearVelocity = Vector3.zero;
+        rb.linearVelocity = direction * dashImpulse;
+
+        dashGraceTimer = dashGraceTime;
     }
 
 

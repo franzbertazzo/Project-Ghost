@@ -3,6 +3,9 @@ using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
+
+    public bool DashPressed { get; private set; }
+
     [Header("Input Values (Read-Only)")]
     public Vector2 MoveInput { get; private set; }      // WASD
     public float VerticalInput { get; private set; }    // Space/Ctrl
@@ -33,5 +36,18 @@ public class PlayerInputHandler : MonoBehaviour
     public void OnBrake(InputAction.CallbackContext context)
     {
         IsBraking = context.ReadValueAsButton();
+    }
+
+    // ---- DASH (ONE-SHOT) ----
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            DashPressed = true;
+    }
+
+    void LateUpdate()
+    {
+        // Reset one-frame inputs
+        DashPressed = false;
     }
 }
