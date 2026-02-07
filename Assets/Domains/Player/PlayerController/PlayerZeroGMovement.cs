@@ -32,6 +32,10 @@ public class PlayerZeroGMovement : MonoBehaviour
     [Header("Dash Control")]
     public float dashGraceTime = 0.15f;
 
+    [Header("Dash Strength")]
+    public float surfaceDashSpeed = 18f;
+    public float airDashSpeed = 10f;
+
     float dashGraceTimer;
 
     [Header("Rotation Settings")]
@@ -158,26 +162,20 @@ public class PlayerZeroGMovement : MonoBehaviour
     // --------------------------------------------------
     void TrySurfaceDash()
     {
-        Vector3 dashDirection;
-
-        // 1️⃣ Case A: touching a surface → push off
+        // Case A: touching a surface
         if (TryGetSurface(out Vector3 surfaceNormal))
         {
-            dashDirection = surfaceNormal;
-        }
-        // 2️⃣ Case B: no surface → dash in movement direction
-        else
-        {
-            Vector3 velocity = rb.linearVelocity;
-
-            // If we're basically not moving, do nothing
-            if (velocity.sqrMagnitude < 0.01f)
-                return;
-
-            dashDirection = velocity.normalized;
+            ApplyDashImpulse(surfaceNormal, surfaceDashSpeed);
+            return;
         }
 
-        ApplyDashImpulse(dashDirection);
+        // Case B: not touching any surface → dash along movement
+        Vector3 velocity = rb.linearVelocity;
+
+        if (velocity.sqrMagnitude < 0.01f)
+            return;
+
+        ApplyDashImpulse(velocity.normalized, airDashSpeed);
     }
 
     bool TryGetSurface(out Vector3 surfaceNormal)
@@ -208,11 +206,10 @@ public class PlayerZeroGMovement : MonoBehaviour
         return surfaceNormal != Vector3.zero;
     }
 
-   void ApplyDashImpulse(Vector3 direction)
+   void ApplyDashImpulse(Vector3 direction, float dashSpeed)
     {
-        Debug.Log("DASH! Direction: " + direction);
         rb.linearVelocity = Vector3.zero;
-        rb.linearVelocity = direction * dashImpulse;
+        rb.linearVelocity = direction.normalized * dashSpeed;
 
         dashGraceTimer = dashGraceTime;
     }

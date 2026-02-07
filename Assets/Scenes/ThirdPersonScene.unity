@@ -572,7 +572,7 @@ MonoBehaviour:
   precisionSpeedMultiplier: 0.4
   precisionBrakeMultiplier: 2.5
   precisionAccelerationMultiplier: 0.6
-  dashImpulse: 100
+  dashImpulse: 50
   surfaceCheckRadius: 1.2
   surfaceCheckDistance: 1.5
   minDashSpeed: 10
@@ -580,6 +580,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   dashGraceTime: 0.15
+  surfaceDashSpeed: 10
+  airDashSpeed: 100
   alignmentSpeed: 10
   noiseIntensity: 1
 --- !u!114 &327274123
