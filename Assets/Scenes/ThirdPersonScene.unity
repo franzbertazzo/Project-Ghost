@@ -569,7 +569,7 @@ MonoBehaviour:
   maxSpeed: 12
   inputResponsiveness: 1.5
   thrustPower: 10
-  brakeForce: 5
+  brakeForce: 10
   precisionSpeedMultiplier: 0.4
   precisionBrakeMultiplier: 2.5
   precisionAccelerationMultiplier: 0.6

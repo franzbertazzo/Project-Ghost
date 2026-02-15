@@ -38,6 +38,13 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float surfaceDashSpeed = 18f;
     public float airDashSpeed = 10f;
 
+    [Header("Dash Charges")]
+    public int maxDashCharges = 3;
+    public float dashRechargeTime = 1.4f;
+
+    private int currentDashCharges;
+    private float dashRechargeTimer;
+
     float dashGraceTimer;
 
     [Header("Rotation Settings")]
@@ -56,6 +63,8 @@ public class PlayerZeroGMovement : MonoBehaviour
         rb.linearDamping = 0.2f;
         rb.angularDamping = 0.2f;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        currentDashCharges = maxDashCharges;
 
         if (inputHandler == null)
             inputHandler = GetComponent<PlayerInputHandler>();
@@ -79,6 +88,8 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     void Update()
     {
+        RechargeDashCharges();
+
         if (inputHandler != null && inputHandler.DashPressed)
         {
             TrySurfaceDash();
@@ -174,15 +185,21 @@ public class PlayerZeroGMovement : MonoBehaviour
         // Case B: not touching any surface → dash along movement
         Vector3 velocity = rb.linearVelocity;
 
+        if (currentDashCharges <= 0)
+        {
+            return;
+        }
+
         if (velocity.sqrMagnitude < 0.01f)
             return;
-
         ApplyDashImpulse(velocity.normalized, airDashSpeed);
+        ConsumeDashCharge();
         cameraFOVPunch?.TriggerDashFOV();
     }
 
     bool TryGetSurface(out Vector3 surfaceNormal)
     {
+
         Collider[] colliders = Physics.OverlapSphere(
             rb.worldCenterOfMass,
             surfaceCheckRadius,
@@ -209,12 +226,32 @@ public class PlayerZeroGMovement : MonoBehaviour
         return surfaceNormal != Vector3.zero;
     }
 
+    void ConsumeDashCharge()
+    {
+        currentDashCharges--;
+        dashRechargeTimer = 0f;
+    }
+
    void ApplyDashImpulse(Vector3 direction, float dashSpeed)
     {
         rb.linearVelocity = Vector3.zero;
         rb.linearVelocity = direction.normalized * dashSpeed;
 
         dashGraceTimer = dashGraceTime;
+    }
+
+    void RechargeDashCharges()
+    {
+        if (currentDashCharges >= maxDashCharges)
+            return;
+
+        dashRechargeTimer += Time.unscaledDeltaTime;
+
+        if (dashRechargeTimer >= dashRechargeTime)
+        {
+            dashRechargeTimer -= dashRechargeTime;
+            currentDashCharges = Mathf.Min(currentDashCharges + 1, maxDashCharges);
+        }
     }
 
 
