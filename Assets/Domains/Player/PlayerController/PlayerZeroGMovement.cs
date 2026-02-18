@@ -3,6 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerZeroGMovement : MonoBehaviour
 {
+    public bool IsDashing { get; private set; }
+
     [SerializeField] private CameraFOVPunch cameraFOVPunch; // Optional reference for dash FOV effect
 
     [Header("References")]
@@ -96,9 +98,16 @@ public class PlayerZeroGMovement : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void OnCollisionEnter(Collision collision)
     {
-        EmitNoise();
+        if (!IsDashing)
+            return;
+
+        EnemyHealth enemy = collision.collider.GetComponentInParent<EnemyHealth>();
+        if (enemy != null)
+        {
+            enemy.Die(fromDash: true);
+        }
     }
 
     // -----------------------
@@ -232,12 +241,29 @@ public class PlayerZeroGMovement : MonoBehaviour
         dashRechargeTimer = 0f;
     }
 
-   void ApplyDashImpulse(Vector3 direction, float dashSpeed)
+    void ApplyDashImpulse(Vector3 direction, float dashSpeed)
     {
         rb.linearVelocity = Vector3.zero;
         rb.linearVelocity = direction.normalized * dashSpeed;
 
         dashGraceTimer = dashGraceTime;
+
+        IsDashing = true;
+
+        PlayerHealth health = GetComponent<PlayerHealth>();
+        if (health)
+            health.ExternalInvulnerable = true;
+
+        Invoke(nameof(EndDash), dashGraceTime);
+    }
+
+    void EndDash()
+    {
+        IsDashing = false;
+
+        PlayerHealth health = GetComponent<PlayerHealth>();
+        if (health)
+            health.ExternalInvulnerable = false;
     }
 
     void RechargeDashCharges()

@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
+    public bool ExternalInvulnerable { get; set; }
+
     [Header("Health")]
     public int maxHealth = 100;
     public int currentHealth;
@@ -18,7 +20,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (invulnerable)
+        if (invulnerable || ExternalInvulnerable)
             return;
 
         currentHealth -= damage;
