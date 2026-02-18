@@ -14,6 +14,7 @@ public class EnemyStateController : MonoBehaviour
     [Header("State Settings")]
     public EnemyState initialState = EnemyState.Patrol;
 
+    
     [Header("Debug")]
     [SerializeField]
     private EnemyState _currentState = EnemyState.Patrol;
@@ -32,12 +33,14 @@ public class EnemyStateController : MonoBehaviour
 
     private GameObject _suspiciousPointGO;
     private Transform _suspiciousPoint;
+    private EnemyShooter _shooter;
 
     void Awake()
     {
         _perception = GetComponent<EnemyPerception>();
         _steering   = GetComponent<SteeringBehavior>();
         _patrol     = GetComponent<EnemyZeroGWaypointPatrol>();
+        _shooter = GetComponent<EnemyShooter>();
 
         if (!player && _perception != null)
             player = _perception.player;
@@ -79,6 +82,12 @@ public class EnemyStateController : MonoBehaviour
     void ChangeState(EnemyState newState)
     {
         if (_currentState == newState) return;
+
+        // EXIT LOGIC
+        if (_currentState == EnemyState.Alerted && _shooter)
+        {
+            _shooter.StopFiring();
+        }
 
         _currentState = newState;
         Debug.Log($"{name} STATE → {_currentState}");
@@ -122,10 +131,14 @@ public class EnemyStateController : MonoBehaviour
     void EnterAlerted()
     {
         _steering.ApplyAlertedPreset();
+
         _timeSinceLastSeen = 0f;
 
         if (_patrol)
             _patrol.enabled = false;
+
+        _shooter.SetTarget(player);
+        _shooter.StartFiring();
     }
 
     // =========================
@@ -197,5 +210,11 @@ public class EnemyStateController : MonoBehaviour
     {
         if (_suspiciousPointGO)
             Destroy(_suspiciousPointGO);
+    }
+
+    void OnDisable()
+    {
+        if (_shooter)
+            _shooter.StopFiring();
     }
 }

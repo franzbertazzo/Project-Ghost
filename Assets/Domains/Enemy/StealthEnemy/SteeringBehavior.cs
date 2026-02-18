@@ -19,6 +19,7 @@ public class SteeringBehavior : MonoBehaviour
     public float avoidRadius = 1f;
     public float avoidDistance = 4f;
     public float avoidStrength = 3f;
+    public LayerMask obstacleMask;
 
     [Header("Wander (Stealth)")]
     public float wanderWeight = 0.4f;
@@ -207,7 +208,9 @@ public class SteeringBehavior : MonoBehaviour
             avoidRadius,
             forward,
             out hit,
-            avoidDistance
+            avoidDistance,
+            obstacleMask,
+            QueryTriggerInteraction.Ignore
         ))
         {
             Vector3 slide =
