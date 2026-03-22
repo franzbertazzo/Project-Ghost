@@ -668,6 +668,92 @@ MonoBehaviour:
     m_HintWeight: 1
     m_MaintainTargetPositionOffset: 0
     m_MaintainTargetRotationOffset: 0
+--- !u!1 &1065492221435895084
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5670976646275884465}
+  - component: {fileID: 8637901013458159454}
+  m_Layer: 0
+  m_Name: AimHead
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5670976646275884465
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065492221435895084}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5083406985963884178}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8637901013458159454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065492221435895084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3c430f382484144e925c097c2d33cfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiAimConstraint
+  m_Weight: 1
+  m_Data:
+    m_ConstrainedObject: {fileID: 7329890102873057956}
+    m_SourceObjects:
+      m_Length: 1
+      m_Item0:
+        transform: {fileID: 0}
+        weight: 1
+      m_Item1:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item2:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item3:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item4:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item5:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item6:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item7:
+        transform: {fileID: 0}
+        weight: 0
+    m_Offset: {x: 0, y: 0, z: 0}
+    m_MinLimit: -180
+    m_MaxLimit: 180
+    m_AimAxis: 4
+    m_UpAxis: 2
+    m_WorldUpType: 0
+    m_WorldUpObject: {fileID: 0}
+    m_WorldUpAxis: 2
+    m_MaintainOffset: 0
+    m_ConstrainedAxes:
+      x: 1
+      y: 1
+      z: 1
 --- !u!1 &1091397472662029653
 GameObject:
   m_ObjectHideFlags: 0
@@ -1019,6 +1105,7 @@ Transform:
   - {fileID: 5874100229867807109}
   - {fileID: 4564568128186074164}
   - {fileID: 8358587076311699378}
+  - {fileID: 5670976646275884465}
   m_Father: {fileID: 7558486926416782379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4068695555170326179
@@ -1233,6 +1320,7 @@ GameObject:
   - component: {fileID: 3389336144830328}
   - component: {fileID: 1249059598314820587}
   - component: {fileID: 6692399930677014204}
+  - component: {fileID: 2741053744526104438}
   m_Layer: 0
   m_Name: 3DModel
   m_TagString: Untagged
@@ -1355,6 +1443,37 @@ MonoBehaviour:
   - {fileID: 1718782637244084655}
   - {fileID: 2309440071375773093}
   - {fileID: 7639008747670165483}
+--- !u!114 &2741053744526104438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2508592581475513994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4279fc6e490e414e8c1d18935e83753, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationStateController
+  animator: {fileID: 3389336144830328}
+  inputHandler: {fileID: 8931776609019568964}
+  movement: {fileID: 1794544209163471656}
+  smoothTimeToIdle: 0.3
+  smoothTimeFromIdle: 0.05
+  smoothTimeBetweenMoves: 0.1
+  dashForward: DashForward
+  dashBackward: DashBackward
+  dashRight: DashRight
+  dashLeft: DashLeft
+  dashUp: DashUp
+  dashDown: DashDown
+  leftFoot: {fileID: 1556912638925633768}
+  rightFoot: {fileID: 3999573878425938834}
+  ikWeight: 1
+  ikRaycastDistance: 0.5
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &3001965898099172652
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,6 +4,9 @@ using UnityEngine;
 public class PlayerZeroGMovement : MonoBehaviour
 {
     public bool IsDashing { get; private set; }
+    public Vector3 LastDashDirection { get; private set; }
+    public bool LastDashWasSurface { get; private set; }
+    public Vector3 LastSurfaceNormal { get; private set; }
 
     [SerializeField] private CameraFOVPunch cameraFOVPunch; // Optional reference for dash FOV effect
 
@@ -184,23 +187,19 @@ public class PlayerZeroGMovement : MonoBehaviour
     // --------------------------------------------------
     void TrySurfaceDash()
     {
-        // Case A: touching a surface
         if (TryGetSurface(out Vector3 surfaceNormal))
         {
+            LastDashWasSurface = true;
+            LastSurfaceNormal = surfaceNormal;
             ApplyDashImpulse(surfaceNormal, surfaceDashSpeed);
             return;
         }
 
-        // Case B: not touching any surface → dash along movement
         Vector3 velocity = rb.linearVelocity;
+        if (currentDashCharges <= 0 || velocity.sqrMagnitude < 0.01f) return;
 
-        if (currentDashCharges <= 0)
-        {
-            return;
-        }
-
-        if (velocity.sqrMagnitude < 0.01f)
-            return;
+        LastDashWasSurface = false;
+        LastSurfaceNormal = Vector3.zero;
         ApplyDashImpulse(velocity.normalized, airDashSpeed);
         ConsumeDashCharge();
         cameraFOVPunch?.TriggerDashFOV();
@@ -243,6 +242,7 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     void ApplyDashImpulse(Vector3 direction, float dashSpeed)
     {
+        LastDashDirection = direction.normalized;
         rb.linearVelocity = Vector3.zero;
         rb.linearVelocity = direction.normalized * dashSpeed;
 
