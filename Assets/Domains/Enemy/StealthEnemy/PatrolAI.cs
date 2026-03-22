@@ -86,7 +86,7 @@ public class EnemyZeroGWaypointPatrol : MonoBehaviour
 
         if (all == null || all.Length == 0)
         {
-            Debug.LogWarning($"{name}: No waypoints found in the scene for patrol.");
+            // Debug.LogWarning($"{name}: No waypoints found in the scene for patrol.");
             currentWaypoint = null;
             nextWaypoint = null;
             return;
@@ -113,11 +113,11 @@ public class EnemyZeroGWaypointPatrol : MonoBehaviour
             currentWaypoint = closest;
             isWaiting = false;       // make sure we're not stuck in a waiting state
             PickNextWaypoint();      // this will also set the steering target
-            Debug.Log($"{name} JumpToClosestWaypoint → {closest.name}");
+            // Debug.Log($"{name} JumpToClosestWaypoint → {closest.name}");
         }
         else
         {
-            Debug.LogWarning($"{name}: Could not determine closest waypoint.");
+            // Debug.LogWarning($"{name}: Could not determine closest waypoint.");
             nextWaypoint = null;
         }
     }
