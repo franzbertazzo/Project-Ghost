@@ -80,7 +80,6 @@ GameObject:
   - component: {fileID: 7778497964616727450}
   - component: {fileID: 1794544209163471656}
   - component: {fileID: 3879353158446354159}
-  - component: {fileID: 8303767360727373871}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -430,28 +429,6 @@ MonoBehaviour:
   maxHealth: 10
   currentHealth: 10
   invulnerabilityTime: 0.15
---- !u!95 &8303767360727373871
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 337981866061109245}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 572048a85bf218c4086b31848eb3f175, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &426664092519314638
 GameObject:
   m_ObjectHideFlags: 0
@@ -526,7 +503,7 @@ GameObject:
   - component: {fileID: 8358587076311699378}
   - component: {fileID: 8522886035078781239}
   m_Layer: 0
-  m_Name: Aim
+  m_Name: AimBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -561,12 +538,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiAimConstraint
   m_Weight: 1
   m_Data:
-    m_ConstrainedObject: {fileID: 0}
+    m_ConstrainedObject: {fileID: 4427019492585741027}
     m_SourceObjects:
-      m_Length: 0
+      m_Length: 1
       m_Item0:
         transform: {fileID: 0}
-        weight: 0
+        weight: 1
       m_Item1:
         transform: {fileID: 0}
         weight: 0
