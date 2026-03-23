@@ -31,14 +31,20 @@ public class PlayerAnimationStateController : MonoBehaviour
             inputHandler = GetComponent<PlayerInputHandler>();
         if (movement == null)
             movement = GetComponent<PlayerZeroGMovement>();
+
+        if (movement != null)
+            movement.OnDashPerformed += HandleDash;
+    }
+
+    void OnDestroy()
+    {
+        if (movement != null)
+            movement.OnDashPerformed -= HandleDash;
     }
 
     void Update()
     {
         UpdateAnimatorParameters();
-
-        if (inputHandler.DashPressed)
-            TriggerDashAnimation();
     }
 
     private void UpdateAnimatorParameters()
@@ -62,13 +68,11 @@ public class PlayerAnimationStateController : MonoBehaviour
         animator.SetFloat("MoveDirection", currentMoveDirection);
     }
 
-    private void TriggerDashAnimation()
+    private void HandleDash(Vector3 worldDir, bool isSurface)
     {
-        if (movement == null) return;
+        if (!isSurface || animator == null) return;
 
-        if (!movement.LastDashWasSurface) return;
-
-        Vector3 localDir = transform.InverseTransformDirection(movement.LastDashDirection);
+        Vector3 localDir = transform.InverseTransformDirection(worldDir);
         animator.CrossFadeInFixedTime(GetDashStateName(localDir), 0.05f);
     }
 

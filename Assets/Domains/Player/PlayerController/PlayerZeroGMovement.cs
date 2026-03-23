@@ -8,6 +8,9 @@ public class PlayerZeroGMovement : MonoBehaviour
     public bool LastDashWasSurface { get; private set; }
     public Vector3 LastSurfaceNormal { get; private set; }
 
+    // Fired immediately after a dash is applied: (worldSpaceDirection, isSurfaceDash)
+    public event System.Action<Vector3, bool> OnDashPerformed;
+
     [SerializeField] private CameraFOVPunch cameraFOVPunch; // Optional reference for dash FOV effect
 
     [Header("References")]
@@ -192,6 +195,7 @@ public class PlayerZeroGMovement : MonoBehaviour
             LastDashWasSurface = true;
             LastSurfaceNormal = surfaceNormal;
             ApplyDashImpulse(surfaceNormal, surfaceDashSpeed);
+            OnDashPerformed?.Invoke(surfaceNormal, true);
             return;
         }
 
@@ -201,6 +205,7 @@ public class PlayerZeroGMovement : MonoBehaviour
         LastDashWasSurface = false;
         LastSurfaceNormal = Vector3.zero;
         ApplyDashImpulse(velocity.normalized, airDashSpeed);
+        OnDashPerformed?.Invoke(velocity.normalized, false);
         ConsumeDashCharge();
         cameraFOVPunch?.TriggerDashFOV();
     }
