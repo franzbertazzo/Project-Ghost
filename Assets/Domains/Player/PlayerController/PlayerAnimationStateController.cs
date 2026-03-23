@@ -20,20 +20,8 @@ public class PlayerAnimationStateController : MonoBehaviour
     [SerializeField] private string dashUp       = "DashUp";
     [SerializeField] private string dashDown     = "DashDown";
 
-    [Header("Surface IK")]
-    [SerializeField] private Transform leftFoot;
-    [SerializeField] private Transform rightFoot;
-    [SerializeField] private float ikWeight = 1f;
-    [SerializeField] private float ikRaycastDistance = 0.5f;
-    [SerializeField] private LayerMask surfaceMask;
-
     private float currentMoveDirection = 0f;
     private float velocity = 0f;
-
-    // IK state
-    private Vector3 leftFootIKPos, rightFootIKPos;
-    private Quaternion leftFootIKRot, rightFootIKRot;
-    private float currentIKWeight = 0f;
 
     void Start()
     {
@@ -49,13 +37,8 @@ public class PlayerAnimationStateController : MonoBehaviour
     {
         UpdateAnimatorParameters();
 
-        // Trigger dash animation on the frame DashPressed is true
         if (inputHandler.DashPressed)
             TriggerDashAnimation();
-
-        // Fade IK weight out when not dashing
-        float ikTarget = (movement.IsDashing && movement.LastDashWasSurface) ? 1f : 0f;
-        currentIKWeight = Mathf.MoveTowards(currentIKWeight, ikTarget, Time.deltaTime * 5f);
     }
 
     private void UpdateAnimatorParameters()
@@ -83,20 +66,14 @@ public class PlayerAnimationStateController : MonoBehaviour
     {
         if (movement == null) return;
 
-        // Convert world dash direction to player local space
+        if (!movement.LastDashWasSurface) return;
+
         Vector3 localDir = transform.InverseTransformDirection(movement.LastDashDirection);
-
-        string stateName = GetDashStateName(localDir);
-        animator.CrossFade(stateName, 0.05f);
-
-        // If surface dash, compute IK foot positions
-        if (movement.LastDashWasSurface)
-            ComputeFootIKPositions(movement.LastSurfaceNormal);
+        animator.CrossFadeInFixedTime(GetDashStateName(localDir), 0.05f);
     }
 
     private string GetDashStateName(Vector3 localDir)
     {
-        // Find which of the 6 axes the direction is closest to
         float absX = Mathf.Abs(localDir.x);
         float absY = Mathf.Abs(localDir.y);
         float absZ = Mathf.Abs(localDir.z);
@@ -107,49 +84,5 @@ public class PlayerAnimationStateController : MonoBehaviour
             return localDir.x >= 0 ? dashRight : dashLeft;
 
         return localDir.y >= 0 ? dashUp : dashDown;
-    }
-
-    private void ComputeFootIKPositions(Vector3 surfaceNormal)
-    {
-        if (leftFoot != null)
-            SolveFootIK(leftFoot.position, surfaceNormal, out leftFootIKPos, out leftFootIKRot);
-
-        if (rightFoot != null)
-            SolveFootIK(rightFoot.position, surfaceNormal, out rightFootIKPos, out rightFootIKRot);
-    }
-
-    private void SolveFootIK(Vector3 footPos, Vector3 surfaceNormal, 
-        out Vector3 ikPos, out Quaternion ikRot)
-    {
-        // Cast from foot along the surface normal to find exact contact point
-        if (Physics.Raycast(footPos, -surfaceNormal, out RaycastHit hit, 
-            ikRaycastDistance, surfaceMask))
-        {
-            ikPos = hit.point;
-            ikRot = Quaternion.LookRotation(
-                Vector3.ProjectOnPlane(transform.forward, hit.normal), 
-                hit.normal);
-        }
-        else
-        {
-            ikPos = footPos;
-            ikRot = Quaternion.identity;
-        }
-    }
-
-    // Called by Unity's animation system when IK Pass is enabled on the layer
-    private void OnAnimatorIK(int layerIndex)
-    {
-        if (animator == null || currentIKWeight <= 0f) return;
-
-        animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, currentIKWeight);
-        animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, currentIKWeight);
-        animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftFootIKPos);
-        animator.SetIKRotation(AvatarIKGoal.LeftFoot, leftFootIKRot);
-
-        animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, currentIKWeight);
-        animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, currentIKWeight);
-        animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootIKPos);
-        animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootIKRot);
     }
 }
