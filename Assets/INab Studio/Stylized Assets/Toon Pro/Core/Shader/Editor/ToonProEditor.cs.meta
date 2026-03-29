@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 208067c407f24104f93c230ac99ffd78
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 225921
+  packageName: 'Toon Pro: Ultimate Stylized Shading'
+  packageVersion: 3.2
+  assetPath: Assets/INab Studio/Stylized Assets/Toon Pro/Core/Shader/Editor/ToonProEditor.cs
+  uploadId: 862124
