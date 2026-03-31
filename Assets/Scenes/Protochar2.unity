@@ -248,6 +248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &259938952 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3873311794711607395, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
@@ -265,6 +266,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &443637840
 GameObject:
   m_ObjectHideFlags: 0
@@ -1035,6 +1037,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!114 &811703875 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: -599992001439795737, guid: 681b1184115af6945a958d6e7d23644d, type: 3}
@@ -1361,6 +1364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &860194322 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3873311794711607395, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
@@ -1378,6 +1382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &997584198
 GameObject:
   m_ObjectHideFlags: 0
@@ -1535,6 +1540,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1026330601
 GameObject:
   m_ObjectHideFlags: 0
@@ -2472,6 +2478,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1276352617
 GameObject:
   m_ObjectHideFlags: 0
@@ -2616,6 +2623,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1335815917 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3873311794711607395, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
@@ -2633,6 +2641,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1001 &1384132558
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2842,6 +2851,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1440706141
 GameObject:
   m_ObjectHideFlags: 0
@@ -4071,6 +4081,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1786423139
 GameObject:
   m_ObjectHideFlags: 0
@@ -4513,6 +4524,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1831815245
 GameObject:
   m_ObjectHideFlags: 0
@@ -4753,6 +4765,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1850859648
 GameObject:
   m_ObjectHideFlags: 0
@@ -5050,6 +5063,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1001 &1896187069
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5163,6 +5177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
 --- !u!1 &1956169023
 GameObject:
   m_ObjectHideFlags: 0
@@ -5512,6 +5527,10 @@ PrefabInstance:
     - target: {fileID: 337981866061109245, guid: 5f0860f957984064da355c244e4e3988, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 337981866061109245, guid: 5f0860f957984064da355c244e4e3988, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 337981866061109245, guid: 5f0860f957984064da355c244e4e3988, type: 3}
       propertyPath: m_TagString

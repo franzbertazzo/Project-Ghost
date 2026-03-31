@@ -24,6 +24,19 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float inputResponsiveness = 1.5f; // exaggerates input
 
     [Header("Movement Settings")]
+    public GameObject boosterL; // For visual movement only
+    public GameObject boosterR; // For visual movement only
+    public GameObject upShoulderBoosterL; // For visual movement only
+    public GameObject upShoulderBoosterR; // For visual movement only
+    public GameObject sideShoulderBoosterL; // For visual movement only
+    public GameObject sideShoulderBoosterR; // For visual movement only
+    public GameObject sideBoosterL; // For visual movement only
+    public GameObject sideBoosterR; // For visual movement only
+    public GameObject sideFootBoosterL; // For visual movement only
+    public GameObject sideFootBoosterR; // For visual movement only
+    public Vector3 boosterRotationOffset = Vector3.zero; // Euler offset to fine-tune booster facing
+    public float boosterSnapDuration = 1f; // Seconds to use input direction before switching to velocity
+    public float boosterRotationSmoothing = 8f; // How fast boosters rotate toward target direction
     public float thrustPower = 10f;
     public float brakeForce = 5f;
 
@@ -57,12 +70,15 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     [Header("Rotation Settings")]
     public float alignmentSpeed = 10f; // How fast player aligns to camera
+    public float maxBodyAngle = 60f;   // Max angle body can be from camera before snapping back
 
     [Header("Noise Settings")]
     public float noiseIntensity = 1f;
 
     private Rigidbody rb;
     private NoiseEmitter noiseEmitter;
+    private Quaternion _smoothBodyRotation;
+    private float _boosterActiveTimer;
 
     private void Awake()
     {
@@ -71,6 +87,7 @@ public class PlayerZeroGMovement : MonoBehaviour
         rb.linearDamping = 0.2f;
         rb.angularDamping = 0.2f;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
+        _smoothBodyRotation = rb.rotation;
 
         currentDashCharges = maxDashCharges;
 
@@ -90,8 +107,6 @@ public class PlayerZeroGMovement : MonoBehaviour
         {
             ApplyMovement();
         }
-
-        AlignWithCamera();
     }
 
     void Update()
@@ -101,6 +116,65 @@ public class PlayerZeroGMovement : MonoBehaviour
         if (inputHandler != null && inputHandler.DashPressed)
         {
             TrySurfaceDash();
+        }
+        AlignWithCamera();
+        UpdateBoosters();
+    }
+
+    private void UpdateBoosters()
+    {
+        if (inputHandler == null) return;
+
+        bool moving = Mathf.Abs(inputHandler.MoveInput.y) > 0.01f  // W / S
+                   || inputHandler.VerticalInput > 0.01f;           // Space (up)
+        bool boostersActive = moving;
+
+        if (boosterL != null) boosterL.SetActive(boostersActive);
+        if (boosterR != null) boosterR.SetActive(boostersActive);
+
+        bool goingDown = inputHandler.VerticalInput < -0.01f; // Ctrl (down)
+        if (upShoulderBoosterL != null) upShoulderBoosterL.SetActive(goingDown);
+        if (upShoulderBoosterR != null) upShoulderBoosterR.SetActive(goingDown);
+
+        if (sideBoosterR != null) sideBoosterR.SetActive(inputHandler.MoveInput.x < -0.01f); // A
+        if (sideBoosterL != null) sideBoosterL.SetActive(inputHandler.MoveInput.x > 0.01f);  // D
+
+        if (sideFootBoosterR != null) sideFootBoosterR.SetActive(inputHandler.RollInput > 0.01f);  // E
+        if (sideShoulderBoosterL != null) sideShoulderBoosterL.SetActive(inputHandler.RollInput > 0.01f);  // E
+        if (sideFootBoosterL != null) sideFootBoosterL.SetActive(inputHandler.RollInput < -0.01f); // Q
+        if (sideShoulderBoosterR != null) sideShoulderBoosterR.SetActive(inputHandler.RollInput < -0.01f); // Q
+
+        if (boostersActive)
+        {
+            _boosterActiveTimer += Time.deltaTime;
+
+            Vector3 thrustDir = Vector3.zero;
+
+            bool useInputDir = _boosterActiveTimer < boosterSnapDuration && moving && cameraRig != null;
+            if (useInputDir)
+            {
+                // Snap phase: point instantly toward where the player wants to go
+                Vector3 inputVec = new Vector3(0f, inputHandler.VerticalInput, inputHandler.MoveInput.y);
+                thrustDir = (cameraRig.up * inputVec.y + cameraRig.forward * inputVec.z).normalized;
+            }
+            else if (rb.linearVelocity.sqrMagnitude > 0.01f)
+            {
+                // Follow phase: track actual velocity vector
+                thrustDir = rb.linearVelocity.normalized;
+            }
+
+            if (thrustDir.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(-thrustDir)
+                                          * Quaternion.Euler(boosterRotationOffset);
+                float t = 1f - Mathf.Exp(-boosterRotationSmoothing * Time.deltaTime);
+                if (boosterL != null) boosterL.transform.rotation = Quaternion.Slerp(boosterL.transform.rotation, targetRotation, t);
+                if (boosterR != null) boosterR.transform.rotation = Quaternion.Slerp(boosterR.transform.rotation, targetRotation, t);
+            }
+        }
+        else
+        {
+            _boosterActiveTimer = 0f;
         }
     }
 
@@ -289,21 +363,32 @@ public class PlayerZeroGMovement : MonoBehaviour
     // -----------------------
     // Rotation (camera authority)
     // -----------------------
+    
     private void AlignWithCamera()
     {
-        if (cameraRig == null)
-            return;
+        if (cameraRig == null) return;
 
-        Quaternion targetRotation =
-            Quaternion.LookRotation(cameraRig.forward, cameraRig.up);
+        Quaternion cameraTarget = Quaternion.LookRotation(cameraRig.forward, cameraRig.up);
 
-        rb.MoveRotation(
-            Quaternion.Slerp(
-                rb.rotation,
-                targetRotation,
-                alignmentSpeed * Time.fixedDeltaTime
-            )
+        // Body chases camera at constant angular speed
+        _smoothBodyRotation = Quaternion.RotateTowards(
+            _smoothBodyRotation,
+            cameraTarget,
+            alignmentSpeed * Time.deltaTime
         );
+
+        // Clamp: if body has fallen too far behind, pin it to maxBodyAngle from camera
+        // It will still chase normally once the camera stops moving fast
+        if (Quaternion.Angle(_smoothBodyRotation, cameraTarget) > maxBodyAngle)
+        {
+            _smoothBodyRotation = Quaternion.RotateTowards(
+                cameraTarget,
+                _smoothBodyRotation,
+                maxBodyAngle
+            );
+        }
+
+        rb.MoveRotation(_smoothBodyRotation);
     }
 
     // -----------------------

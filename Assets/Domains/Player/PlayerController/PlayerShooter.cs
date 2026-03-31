@@ -35,8 +35,6 @@ public class PlayerShooter : MonoBehaviour
 
     public void Shoot()
     {
-
-        Debug.Log("PlayerShooter Shoot() called");
         foreach (GameObject gun in guns)
         {
             if (gun.GetComponent<Weapon>() != null)
