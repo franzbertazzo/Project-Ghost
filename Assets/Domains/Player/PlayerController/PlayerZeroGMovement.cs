@@ -59,6 +59,20 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float surfaceDashSpeed = 18f;
     public float airDashSpeed = 10f;
 
+    [Header("Surface Dash Behavior")]
+    [Tooltip("Dot-product threshold to distinguish rebound/escape from glide")]
+    public float reboundDotThreshold = 0.5f;
+    [Tooltip("Tangent weight when gliding along surface")]
+    public float surfaceTangentWeight = 0.7f;
+    [Tooltip("Normal weight when gliding along surface (slight push off)")]
+    public float surfaceNormalWeight = 0.3f;
+    [Tooltip("Speed multiplier for hard rebound (input toward surface)")]
+    public float reboundSpeedMultiplier = 1.3f;
+    [Tooltip("Speed multiplier for glide (input sideways to surface)")]
+    public float glideSpeedMultiplier = 1.0f;
+    [Tooltip("Speed multiplier for escape dash (input away from surface)")]
+    public float escapeSpeedMultiplier = 1.1f;
+
     [Header("Dash Charges")]
     public int maxDashCharges = 3;
     public float dashRechargeTime = 1.4f;
@@ -260,7 +274,7 @@ public class PlayerZeroGMovement : MonoBehaviour
     }
 
     // --------------------------------------------------
-    // SURFACE DASH
+    // SURFACE DASH (Tangent-Based + Rebound Control)
     // --------------------------------------------------
     void TrySurfaceDash()
     {
@@ -268,8 +282,46 @@ public class PlayerZeroGMovement : MonoBehaviour
         {
             LastDashWasSurface = true;
             LastSurfaceNormal = surfaceNormal;
-            ApplyDashImpulse(surfaceNormal, surfaceDashSpeed);
-            OnDashPerformed?.Invoke(surfaceNormal, true);
+
+            Vector3 inputDir = GetCameraRelativeInput();
+            Vector3 dashDir;
+            float dashSpeed = surfaceDashSpeed;
+
+            if (inputDir.sqrMagnitude < 0.01f)
+            {
+                // No input: default bounce away from surface
+                dashDir = surfaceNormal;
+            }
+            else
+            {
+                // How aligned is input with the surface normal?
+                // positive = input points away from surface
+                // negative = input points into the surface
+                float alignment = Vector3.Dot(inputDir, surfaceNormal);
+
+                if (alignment < -reboundDotThreshold)
+                {
+                    // Input toward surface → hard rebound (bounce back)
+                    dashDir = surfaceNormal;
+                    dashSpeed *= reboundSpeedMultiplier;
+                }
+                else if (alignment > reboundDotThreshold)
+                {
+                    // Input away from surface → hard escape dash
+                    dashDir = inputDir;
+                    dashSpeed *= escapeSpeedMultiplier;
+                }
+                else
+                {
+                    // Input sideways → glide along surface (tangent-based)
+                    Vector3 tangent = (inputDir - Vector3.Dot(inputDir, surfaceNormal) * surfaceNormal).normalized;
+                    dashDir = (tangent * surfaceTangentWeight + surfaceNormal * surfaceNormalWeight).normalized;
+                    dashSpeed *= glideSpeedMultiplier;
+                }
+            }
+
+            ApplyDashImpulse(dashDir, dashSpeed);
+            OnDashPerformed?.Invoke(dashDir, true);
             return;
         }
 
@@ -282,6 +334,22 @@ public class PlayerZeroGMovement : MonoBehaviour
         OnDashPerformed?.Invoke(velocity.normalized, false);
         ConsumeDashCharge();
         cameraFOVPunch?.TriggerDashFOV();
+    }
+
+    Vector3 GetCameraRelativeInput()
+    {
+        if (cameraRig == null || inputHandler == null) return Vector3.zero;
+
+        Vector3 raw = new Vector3(
+            inputHandler.MoveInput.x,
+            inputHandler.VerticalInput,
+            inputHandler.MoveInput.y
+        );
+        raw = Vector3.ClampMagnitude(raw, 1f);
+
+        return (cameraRig.right   * raw.x +
+                cameraRig.up      * raw.y +
+                cameraRig.forward * raw.z).normalized;
     }
 
     bool TryGetSurface(out Vector3 surfaceNormal)
