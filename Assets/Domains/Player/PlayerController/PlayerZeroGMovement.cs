@@ -73,6 +73,22 @@ public class PlayerZeroGMovement : MonoBehaviour
     [Tooltip("Speed multiplier for escape dash (input away from surface)")]
     public float escapeSpeedMultiplier = 1.1f;
 
+    [Header("Surface Stick Window")]
+    [Tooltip("Time the player 'sticks' near a surface before auto-launching")]
+    public float stickWindowDuration = 0.2f;
+    [Tooltip("Magnetic pull strength toward the surface while sticking")]
+    public float stickMagnetForce = 30f;
+    [Tooltip("Speed multiplier while in stick window (slow down)")]
+    public float stickSpeedDamping = 0.15f;
+
+    [Header("Chain Bonus")]
+    [Tooltip("Max time between surface dashes to keep the chain alive")]
+    public float chainWindowTime = 2f;
+    [Tooltip("Speed bonus per chain level (0.1 = +10%)")]
+    public float chainSpeedBonusPerLevel = 0.1f;
+    [Tooltip("Maximum chain level (caps the bonus)")]
+    public int maxChainLevel = 5;
+
     [Header("Dash Charges")]
     public int maxDashCharges = 3;
     public float dashRechargeTime = 1.4f;
@@ -81,6 +97,19 @@ public class PlayerZeroGMovement : MonoBehaviour
     private float dashRechargeTimer;
 
     float dashGraceTimer;
+
+    // Stick window state
+    private bool _isSticking;
+    private float _stickTimer;
+    private Vector3 _stickSurfaceNormal;
+    private Vector3 _stickSurfacePoint;
+
+    // Chain bonus state
+    private int _chainLevel;
+    private float _chainTimer;
+
+    /// <summary>Current chain level (0 = no bonus).</summary>
+    public int ChainLevel => _chainLevel;
 
     [Header("Rotation Settings")]
     public float alignmentSpeed = 10f; // How fast player aligns to camera
@@ -113,7 +142,11 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (dashGraceTimer > 0f)
+        if (_isSticking)
+        {
+            ApplyStickMagnet();
+        }
+        else if (dashGraceTimer > 0f)
         {
             dashGraceTimer -= Time.fixedDeltaTime;
         }
@@ -126,10 +159,15 @@ public class PlayerZeroGMovement : MonoBehaviour
     void Update()
     {
         RechargeDashCharges();
+        UpdateChainTimer();
+        UpdateStickWindow();
 
         if (inputHandler != null && inputHandler.DashPressed)
         {
-            TrySurfaceDash();
+            if (_isSticking)
+                ReleaseStickDash();
+            else
+                TrySurfaceDash();
         }
         AlignWithCamera();
         UpdateBoosters();
@@ -274,54 +312,119 @@ public class PlayerZeroGMovement : MonoBehaviour
     }
 
     // --------------------------------------------------
+    // SURFACE STICK WINDOW
+    // --------------------------------------------------
+    void EnterStickWindow(Vector3 surfaceNormal)
+    {
+        _isSticking = true;
+        _stickTimer = stickWindowDuration;
+        _stickSurfaceNormal = surfaceNormal;
+
+        // Brake hard on entry
+        rb.linearVelocity *= stickSpeedDamping;
+    }
+
+    void ApplyStickMagnet()
+    {
+        // Gentle pull toward surface
+        rb.AddForce(-_stickSurfaceNormal * stickMagnetForce, ForceMode.Acceleration);
+        // Keep speed low while sticking
+        rb.linearVelocity *= (1f - 5f * Time.fixedDeltaTime);
+    }
+
+    void UpdateStickWindow()
+    {
+        if (!_isSticking) return;
+
+        _stickTimer -= Time.deltaTime;
+        if (_stickTimer <= 0f)
+        {
+            // Window expired — auto-launch with current aim
+            ReleaseStickDash();
+        }
+    }
+
+    void ReleaseStickDash()
+    {
+        _isSticking = false;
+
+        LastDashWasSurface = true;
+        LastSurfaceNormal = _stickSurfaceNormal;
+
+        Vector3 inputDir = GetCameraRelativeInput();
+        Vector3 dashDir;
+        float dashSpeed = surfaceDashSpeed;
+
+        dashSpeed *= GetChainSpeedMultiplier();
+
+        if (inputDir.sqrMagnitude < 0.01f)
+        {
+            dashDir = _stickSurfaceNormal;
+        }
+        else
+        {
+            float alignment = Vector3.Dot(inputDir, _stickSurfaceNormal);
+
+            if (alignment < -reboundDotThreshold)
+            {
+                dashDir = _stickSurfaceNormal;
+                dashSpeed *= reboundSpeedMultiplier;
+            }
+            else if (alignment > reboundDotThreshold)
+            {
+                dashDir = inputDir;
+                dashSpeed *= escapeSpeedMultiplier;
+            }
+            else
+            {
+                Vector3 tangent = (inputDir - Vector3.Dot(inputDir, _stickSurfaceNormal) * _stickSurfaceNormal).normalized;
+                dashDir = (tangent * surfaceTangentWeight + _stickSurfaceNormal * surfaceNormalWeight).normalized;
+                dashSpeed *= glideSpeedMultiplier;
+            }
+        }
+
+        AdvanceChain();
+        ApplyDashImpulse(dashDir, dashSpeed);
+        OnDashPerformed?.Invoke(dashDir, true);
+    }
+
+    // --------------------------------------------------
+    // CHAIN BONUS SYSTEM
+    // --------------------------------------------------
+    void UpdateChainTimer()
+    {
+        if (_chainLevel > 0)
+        {
+            _chainTimer -= Time.deltaTime;
+            if (_chainTimer <= 0f)
+            {
+                _chainLevel = 0;
+            }
+        }
+    }
+
+    void AdvanceChain()
+    {
+        _chainLevel = Mathf.Min(_chainLevel + 1, maxChainLevel);
+        _chainTimer = chainWindowTime;
+    }
+
+    float GetChainSpeedMultiplier()
+    {
+        // Level 0 = 1x, Level 1 = 1x (first dash is normal), Level 2 = 1.1x, etc.
+        int bonusLevels = Mathf.Max(0, _chainLevel);
+        return 1f + bonusLevels * chainSpeedBonusPerLevel;
+    }
+
+    // --------------------------------------------------
     // SURFACE DASH (Tangent-Based + Rebound Control)
     // --------------------------------------------------
     void TrySurfaceDash()
     {
         if (TryGetSurface(out Vector3 surfaceNormal))
         {
-            LastDashWasSurface = true;
-            LastSurfaceNormal = surfaceNormal;
-
-            Vector3 inputDir = GetCameraRelativeInput();
-            Vector3 dashDir;
-            float dashSpeed = surfaceDashSpeed;
-
-            if (inputDir.sqrMagnitude < 0.01f)
-            {
-                // No input: default bounce away from surface
-                dashDir = surfaceNormal;
-            }
-            else
-            {
-                // How aligned is input with the surface normal?
-                // positive = input points away from surface
-                // negative = input points into the surface
-                float alignment = Vector3.Dot(inputDir, surfaceNormal);
-
-                if (alignment < -reboundDotThreshold)
-                {
-                    // Input toward surface → hard rebound (bounce back)
-                    dashDir = surfaceNormal;
-                    dashSpeed *= reboundSpeedMultiplier;
-                }
-                else if (alignment > reboundDotThreshold)
-                {
-                    // Input away from surface → hard escape dash
-                    dashDir = inputDir;
-                    dashSpeed *= escapeSpeedMultiplier;
-                }
-                else
-                {
-                    // Input sideways → glide along surface (tangent-based)
-                    Vector3 tangent = (inputDir - Vector3.Dot(inputDir, surfaceNormal) * surfaceNormal).normalized;
-                    dashDir = (tangent * surfaceTangentWeight + surfaceNormal * surfaceNormalWeight).normalized;
-                    dashSpeed *= glideSpeedMultiplier;
-                }
-            }
-
-            ApplyDashImpulse(dashDir, dashSpeed);
-            OnDashPerformed?.Invoke(dashDir, true);
+            // Enter stick window instead of dashing immediately
+            EnterStickWindow(surfaceNormal);
             return;
         }
 
