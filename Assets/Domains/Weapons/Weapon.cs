@@ -10,12 +10,26 @@ public class Weapon : MonoBehaviour
     public GameObject Target;
 
     [Header("Shooting")]
+    public float fireRate;
+    public bool isAutomatic;
     public float maxShootDistance = 100f;
     public LayerMask shootMask;
 
+    float nextFireTime;
+
+    [Header("Audio")]
+    public AudioClip[] shootSounds;
+    [Range(0f, 1f)] public float shootVolume = 0.3f;
+    private AudioSource audioSource;
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
         // ParticleSystem is managed via Play/Stop, no need to hide at start
 
         if (projectile == null)
@@ -31,8 +45,19 @@ public class Weapon : MonoBehaviour
             Debug.LogWarning("Muzzle not assigned to Weapon.");
     }
 
-    public void Shoot()
+    public bool CanShoot()
     {
+        return Time.time >= nextFireTime;
+    }
+
+    public void Shoot(bool playSound = true)
+    {
+        if (!CanShoot())
+        {
+            return;
+        }
+
+        nextFireTime = Time.time + (1f / Mathf.Max(fireRate, 0.01f));
 
         // Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
         // Vector3 targetPoint;
@@ -55,6 +80,12 @@ public class Weapon : MonoBehaviour
         ParticleSystem muzzlePS = muzzle.GetComponent<ParticleSystem>();
         if (muzzlePS != null)
             muzzlePS.Play();
+
+        if (playSound && shootSounds.Length > 0)
+        {
+            AudioClip clip = shootSounds[Random.Range(0, shootSounds.Length)];
+            audioSource.PlayOneShot(clip, shootVolume);
+        }
 
         GameObject prefabToSpawn = projectile;
         if (prefabToSpawn != null)

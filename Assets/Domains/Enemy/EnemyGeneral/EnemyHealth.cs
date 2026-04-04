@@ -5,28 +5,15 @@ public class EnemyHealth : MonoBehaviour
     public int maxHealth = 100;
     private int currentHealth;
 
+    public bool IsDead => currentHealth <= 0;
+
     void Start()
     {
         currentHealth = maxHealth;
     }
 
-    public void TakeDamage(int damage, bool fromDash = false)
+    public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-
-        if (currentHealth <= 0)
-        {
-            Die(fromDash);
-        }
-    }
-
-    public void Die(bool fromDash = false)
-    {
-        if (fromDash && HitStop.Instance != null)
-        {
-            HitStop.Instance.Trigger(0.06f, 0.05f);
-        }
-
-        Destroy(gameObject);
     }
 }

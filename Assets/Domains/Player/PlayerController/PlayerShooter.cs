@@ -9,6 +9,7 @@ public class PlayerShooter : MonoBehaviour
     [Header("Shooting")]
 
     PlayerInputActions input;
+    bool isShooting;
 
     void Awake()
     {
@@ -18,28 +19,57 @@ public class PlayerShooter : MonoBehaviour
     void OnEnable()
     {
         input.Enable();
-        input.Player.Shoot.performed += OnShoot;
+        input.Player.Shoot.performed += OnShootPerformed;
+        input.Player.Shoot.canceled += OnShootCanceled;
     }
 
     void OnDisable()
     {
-        input.Player.Shoot.performed -= OnShoot;
+        input.Player.Shoot.performed -= OnShootPerformed;
+        input.Player.Shoot.canceled -= OnShootCanceled;
         input.Disable();
     }
 
-    void OnShoot(InputAction.CallbackContext ctx)
+    void OnShootPerformed(InputAction.CallbackContext ctx)
     {
+        isShooting = true;
         Shoot();
+    }
+
+    void OnShootCanceled(InputAction.CallbackContext ctx)
+    {
+        isShooting = false;
+    }
+
+    void Update()
+    {
+        if (!isShooting)
+        {
+            return;
+        }
+
+        foreach (GameObject gun in guns)
+        {
+            Weapon weapon = gun.GetComponent<Weapon>();
+            if (weapon != null && weapon.isAutomatic)
+            {
+                Shoot();
+                return;
+            }
+        }
     }
     
 
     public void Shoot()
     {
+        bool soundPlayed = false;
         foreach (GameObject gun in guns)
         {
-            if (gun.GetComponent<Weapon>() != null)
+            Weapon weapon = gun.GetComponent<Weapon>();
+            if (weapon != null)
             {
-                gun.GetComponent<Weapon>().Shoot();
+                weapon.Shoot(!soundPlayed);
+                soundPlayed = true;
             }
         }
     }

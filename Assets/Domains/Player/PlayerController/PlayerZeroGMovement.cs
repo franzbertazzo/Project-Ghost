@@ -96,6 +96,9 @@ public class PlayerZeroGMovement : MonoBehaviour
     private int currentDashCharges;
     private float dashRechargeTimer;
 
+    public int CurrentDashCharges => currentDashCharges;
+    public float DashRechargeProgress => dashRechargeTimer / dashRechargeTime;
+
     float dashGraceTimer;
 
     // Stick window state
@@ -227,18 +230,6 @@ public class PlayerZeroGMovement : MonoBehaviour
         else
         {
             _boosterActiveTimer = 0f;
-        }
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (!IsDashing)
-            return;
-
-        EnemyHealth enemy = collision.collider.GetComponentInParent<EnemyHealth>();
-        if (enemy != null)
-        {
-            enemy.Die(fromDash: true);
         }
     }
 

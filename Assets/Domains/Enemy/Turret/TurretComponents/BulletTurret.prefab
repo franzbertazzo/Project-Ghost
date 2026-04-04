@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3081191993300965675}
   - component: {fileID: 3223711511151496829}
   m_Layer: 8
-  m_Name: BulletSlow
+  m_Name: BulletTurret
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBullet
   hitPrefab: {fileID: 1567463055289550763, guid: 3e2b3d09d74745944ac3cacd782445b5, type: 3}
-  speed: 20
+  speed: 100
   lifetime: 10
 --- !u!54 &3223711511151496829
 Rigidbody:

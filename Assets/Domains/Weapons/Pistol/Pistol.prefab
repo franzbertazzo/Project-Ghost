@@ -151,10 +151,19 @@ MonoBehaviour:
   firePoint: {fileID: 163368408455747339}
   muzzle: {fileID: 6865968143126435783}
   projectile: {fileID: 3307465512734650322, guid: 36d559837322b2a41b159d3eb5b2b63d, type: 3}
+  Target: {fileID: 0}
+  fireRate: 5
+  isAutomatic: 1
   maxShootDistance: 100
   shootMask:
     serializedVersion: 2
     m_Bits: 0
+  shootSounds:
+  - {fileID: 8300000, guid: 6255950a104d18640973d29a1820b6fa, type: 3}
+  - {fileID: 8300000, guid: 5f40f3208e07a6f42a39d5710827040c, type: 3}
+  - {fileID: 8300000, guid: 7d478ddbbe373e143af1f8feeabade31, type: 3}
+  - {fileID: 8300000, guid: 77e1e00e74a1da5468938bbf55c96874, type: 3}
+  shootVolume: 0.026
 --- !u!1 &995498585550927450
 GameObject:
   m_ObjectHideFlags: 0
