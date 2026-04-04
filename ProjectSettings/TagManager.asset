@@ -14,7 +14,7 @@ TagManager:
   - UI
   - DashSurface
   - Enemy
-  - EnemyBullet
+  - EnemyProjectile
   - Player
   - PlayerBullet
   - 

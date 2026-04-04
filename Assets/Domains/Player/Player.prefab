@@ -20388,6 +20388,7 @@ Transform:
   m_Children:
   - {fileID: 6479256582646978071}
   - {fileID: 3592598155206702282}
+  - {fileID: 1855519321016396279}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6830013126979695873
@@ -20674,9 +20675,9 @@ MonoBehaviour:
   inputHandler: {fileID: 4716409012008235388}
   cameraRig: {fileID: 0}
   acceleration: 50
-  directionalBrake: 0.1
-  maxSpeed: 10
-  inputResponsiveness: 1.5
+  directionalBrake: 0.2
+  maxSpeed: 14
+  inputResponsiveness: 1.6
   boosterL: {fileID: 5461275258434090496}
   boosterR: {fileID: 8015728078238507828}
   upShoulderBoosterL: {fileID: 4204052304947948691}
@@ -20703,8 +20704,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   dashGraceTime: 0.15
-  surfaceDashSpeed: 100
-  airDashSpeed: 80
+  surfaceDashSpeed: 110
+  airDashSpeed: 70
   reboundDotThreshold: 0.5
   surfaceTangentWeight: 0.9
   surfaceNormalWeight: 0.1
@@ -26130,6 +26131,91 @@ MonoBehaviour:
   - {fileID: 8021090991367699108}
   - {fileID: 5622781618700561890}
   - {fileID: 5494282371738389816}
+--- !u!1 &6282850093459332389
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1855519321016396279}
+  - component: {fileID: 952448218760603501}
+  m_Layer: 9
+  m_Name: RingRadar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1855519321016396279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6282850093459332389}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5426404485904432768}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &952448218760603501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6282850093459332389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84a5c0edf27c6854fa5d83f48201ff18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RingRadarController
+  playerTransform: {fileID: 0}
+  cameraTransform: {fileID: 0}
+  enemyMarkerPrefab: {fileID: 2189704558127902035, guid: 23a914e115082594bb66ac08734e486f, type: 3}
+  projectileMarkerPrefab: {fileID: 2582461040936969319, guid: 0d78396004286624e92d5e90580936a6, type: 3}
+  detectionRange: 100
+  minDistance: 5
+  maxDistance: 80
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  projectileLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  minRadius: 1
+  maxRadius: 2.2
+  ringVerticalOffset: 0
+  maxEnemyMarkers: 10
+  maxProjectileMarkers: 8
+  preloadCount: 5
+  closeMarkerScale: 1.2
+  farMarkerScale: 0.4
+  safeColor: {r: 0, g: 1, b: 0.9148698, a: 1}
+  suspiciousColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  dangerColor: {r: 1, g: 0, b: 0, a: 1}
+  warningDistance: 60
+  warningPulseSpeed: 4
+  swayAmount: 0.05
+  swaySpeed: 2
+  audioSource: {fileID: 0}
+  projectileWarningClip: {fileID: 0}
+  audioWarningDistance: 20
+  audioCooldown: 1
+  enemyScanInterval: 0.2
+  ringAlpha: 1
+  emissionIntensity: 1.1
+  scanDetectionRange: 200
+  ringLingerDuration: 1
+  ringFadeSpeed: 1
+  enableProjectileRings: 0
+  projectileClusterAngle: 25
+  projectileViewDotThreshold: 0.3
 --- !u!1 &6395357868695719196
 GameObject:
   m_ObjectHideFlags: 0
