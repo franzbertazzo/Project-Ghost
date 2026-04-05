@@ -72,6 +72,7 @@ public class EnemyPerception : MonoBehaviour
     float _awarenessVelocity; // for smoothing
     bool _wasSuspiciousLastFrame;
     bool _wasFullyAwareLastFrame;
+    PlayerHealth _playerHealth;
 
     void Awake()
     {
@@ -81,6 +82,11 @@ public class EnemyPerception : MonoBehaviour
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj) player = playerObj.transform;
+        }
+
+        if (player)
+        {
+            _playerHealth = player.GetComponent<PlayerHealth>();
         }
     }
 
@@ -146,6 +152,11 @@ public class EnemyPerception : MonoBehaviour
         visionFactor = 0f;
         if (!player) return false;
 
+        if (_playerHealth != null && !_playerHealth.isVisible)
+        {
+            return false;
+        }
+
         Vector3 eyePos = eyes.position;
         Vector3 toPlayer = player.position - eyePos;
 
@@ -195,6 +206,12 @@ public class EnemyPerception : MonoBehaviour
 
     void HandleNoise(NoiseData noise)
     {
+        // Ignore noise if the player is invisible.
+        if (_playerHealth != null && !_playerHealth.isVisible)
+        {
+            return;
+        }
+
         // Check if this noise is in range.
         float distance = Vector3.Distance(transform.position, noise.Position);
         if (distance > hearingRadius + noise.Loudness)

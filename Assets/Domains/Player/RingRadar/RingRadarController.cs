@@ -85,6 +85,12 @@ public class RingRadarController : MonoBehaviour
     [Tooltip("HDR emission multiplier — values > 1 trigger bloom in post-processing")]
     [SerializeField] private float emissionIntensity = 2f;
 
+    [Header("New Enemy Ping")]
+    [Tooltip("How long the ring stays visible when a new enemy is first detected (seconds)")]
+    [SerializeField] private float newEnemyPingDuration = 1f;
+    [Tooltip("How fast the ping fades out after the ping duration expires")]
+    [SerializeField] private float pingFadeSpeed = 2f;
+
     [Header("Scan Mode (Brake Hold)")]
     [Tooltip("Detection range when holding brake to activate scan mode")]
     [SerializeField] private float scanDetectionRange = 1000f;
@@ -104,6 +110,7 @@ public class RingRadarController : MonoBehaviour
     // --------------- runtime state ---------------
 
     private PlayerInputHandler inputHandler;
+    private PlayerHealth playerHealth;
     private bool scanActive;
     private float ringLingerTimer;
     private float ringVisibility;
@@ -112,6 +119,8 @@ public class RingRadarController : MonoBehaviour
     private MarkerPool<ProjectileMarker> projectilePool;
 
     private readonly Dictionary<Transform, EnemyMarker> activeEnemyMarkers = new Dictionary<Transform, EnemyMarker>();
+    private readonly Dictionary<Transform, float> enemyPingTimers = new Dictionary<Transform, float>();
+    private readonly Dictionary<Transform, float> enemyPingVisibility = new Dictionary<Transform, float>();
 
     private readonly List<Transform> detectedEnemies = new List<Transform>();
     private readonly List<Transform> detectedProjectiles = new List<Transform>();
@@ -164,6 +173,11 @@ public class RingRadarController : MonoBehaviour
         if (inputHandler == null && playerTransform != null)
         {
             inputHandler = playerTransform.GetComponent<PlayerInputHandler>();
+        }
+
+        if (playerTransform != null)
+        {
+            playerHealth = playerTransform.GetComponent<PlayerHealth>();
         }
 
         if (cameraTransform == null && Camera.main != null)
@@ -237,6 +251,33 @@ public class RingRadarController : MonoBehaviour
         {
             UpdateEnemyMarkers();
             CleanupMarkers(detectedEnemies, activeEnemyMarkers, enemyPool);
+
+            // Remove ping entries for markers that were cleaned up
+            var pingKeys = new List<Transform>(enemyPingTimers.Keys);
+            for (int i = 0; i < pingKeys.Count; i++)
+            {
+                if (pingKeys[i] == null || !activeEnemyMarkers.ContainsKey(pingKeys[i]))
+                {
+                    enemyPingTimers.Remove(pingKeys[i]);
+                    enemyPingVisibility.Remove(pingKeys[i]);
+                }
+            }
+        }
+
+        // --- Update ping timers and apply ring visibility ---
+        UpdatePingTimers();
+        foreach (var kvp in activeEnemyMarkers)
+        {
+            float pingVis = 0f;
+            if (kvp.Key != null)
+            {
+                enemyPingVisibility.TryGetValue(kvp.Key, out pingVis);
+            }
+            kvp.Value.SetRingVisibility(Mathf.Max(ringVisibility, pingVis));
+        }
+        foreach (var kvp in activeClusterMarkers)
+        {
+            kvp.Value.SetRingVisibility(ringVisibility);
         }
 
         // --- Audio ---
@@ -265,16 +306,6 @@ public class RingRadarController : MonoBehaviour
         // Fade rings in/out
         float targetVisibility = (scanActive || ringLingerTimer > 0f) ? 1f : 0f;
         ringVisibility = Mathf.MoveTowards(ringVisibility, targetVisibility, ringFadeSpeed * Time.deltaTime);
-
-        // Apply visibility to all active markers
-        foreach (var kvp in activeEnemyMarkers)
-        {
-            kvp.Value.SetRingVisibility(ringVisibility);
-        }
-        foreach (var kvp in activeClusterMarkers)
-        {
-            kvp.Value.SetRingVisibility(ringVisibility);
-        }
     }
 
     // =============================================
@@ -520,6 +551,9 @@ public class RingRadarController : MonoBehaviour
                 marker = enemyPool.Get();
                 marker.Activate(target);
                 activeEnemyMarkers[target] = marker;
+                // Start a ping so the ring briefly appears
+                enemyPingTimers[target] = newEnemyPingDuration;
+                enemyPingVisibility[target] = 1f;
             }
             else if (marker.IsFading)
             {
@@ -546,6 +580,49 @@ public class RingRadarController : MonoBehaviour
     }
 
     // =============================================
+    //  Ping timers
+    // =============================================
+
+    private void UpdatePingTimers()
+    {
+        toRemove.Clear();
+        var keys = new List<Transform>(enemyPingTimers.Keys);
+        for (int i = 0; i < keys.Count; i++)
+        {
+            Transform key = keys[i];
+            if (key == null || !activeEnemyMarkers.ContainsKey(key))
+            {
+                toRemove.Add(key);
+                continue;
+            }
+
+            float timer = enemyPingTimers[key] - Time.deltaTime;
+            enemyPingTimers[key] = timer;
+
+            if (timer > 0f)
+            {
+                enemyPingVisibility[key] = 1f;
+            }
+            else
+            {
+                float vis = enemyPingVisibility[key];
+                vis = Mathf.MoveTowards(vis, 0f, pingFadeSpeed * Time.deltaTime);
+                enemyPingVisibility[key] = vis;
+                if (vis <= 0f)
+                {
+                    toRemove.Add(key);
+                }
+            }
+        }
+
+        for (int i = 0; i < toRemove.Count; i++)
+        {
+            enemyPingTimers.Remove(toRemove[i]);
+            enemyPingVisibility.Remove(toRemove[i]);
+        }
+    }
+
+    // =============================================
     //  Placement math (per-entity ring orientation)
     // =============================================
 
@@ -562,12 +639,16 @@ public class RingRadarController : MonoBehaviour
             return perception.CurrentAwareness;
         }
 
-        // Turret: threat based on distance vs detection range
+        // Turret: only show danger color if the turret can actually see the player
         EnemyShooterSimple turret = target.GetComponentInChildren<EnemyShooterSimple>();
         if (turret != null)
         {
             float dist = Vector3.Distance(playerPosition, target.position);
-            if (dist <= turret.detectionRange)
+
+            // Check if the player is visible to enemies
+            bool playerVisible = playerHealth == null || playerHealth.isVisible;
+
+            if (dist <= turret.detectionRange && playerVisible)
             {
                 return 1f;
             }

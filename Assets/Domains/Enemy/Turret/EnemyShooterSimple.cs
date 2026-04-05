@@ -41,6 +41,7 @@ public class EnemyShooterSimple : MonoBehaviour
     float initialYaw;
     Transform turretBase;
     EnemyHealth enemyHealth;
+    PlayerHealth playerHealth;
 
     void Start()
     {
@@ -63,6 +64,7 @@ public class EnemyShooterSimple : MonoBehaviour
         if (player != null)
         {
             target = player.transform;
+            playerHealth = player.GetComponent<PlayerHealth>();
         }
     }
 
@@ -95,6 +97,11 @@ public class EnemyShooterSimple : MonoBehaviour
         {
             return;
         }
+
+        if (playerHealth != null && !playerHealth.isVisible)
+        {
+            return;
+        }
     }
 
     void LateUpdate()
@@ -111,6 +118,11 @@ public class EnemyShooterSimple : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(yawPivot.position, target.position);
         if (distanceToTarget > detectionRange)
+        {
+            return;
+        }
+
+        if (playerHealth != null && !playerHealth.isVisible)
         {
             return;
         }

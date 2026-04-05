@@ -4,6 +4,10 @@ public class PlayerHealth : MonoBehaviour
 {
     public bool ExternalInvulnerable { get; set; }
 
+    [Header("Visibility")]
+    [Tooltip("When false, all enemies are unable to detect or be aware of the player.")]
+    public bool isVisible = true;
+
     [Header("Health")]
     public int maxHealth = 100;
     public int currentHealth;
