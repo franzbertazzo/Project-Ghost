@@ -152,7 +152,7 @@ MonoBehaviour:
   muzzle: {fileID: 6865968143126435783}
   projectile: {fileID: 3307465512734650322, guid: 36d559837322b2a41b159d3eb5b2b63d, type: 3}
   Target: {fileID: 0}
-  fireRate: 5
+  fireRate: 6
   isAutomatic: 1
   maxShootDistance: 100
   shootMask:

@@ -184,7 +184,7 @@ public class EnemyShooterSimple : MonoBehaviour
         isFiring = false;
     }
 
-    void Die()
+    public void Die()
     {
         isDead = true;
         isFiring = false;

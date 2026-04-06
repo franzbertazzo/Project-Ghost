@@ -338,6 +338,10 @@ public class RingRadarController : MonoBehaviour
                 EnemyHealth eh = overlapBuffer[i].GetComponentInParent<EnemyHealth>();
                 if (eh != null)
                 {
+                    if (!eh.isRadarDetectable)
+                    {
+                        continue;
+                    }
                     root = eh.transform;
                 }
             }
@@ -637,6 +641,23 @@ public class RingRadarController : MonoBehaviour
         if (perception != null)
         {
             return perception.CurrentAwareness;
+        }
+
+        // Battleship: use awareness from controller
+        BattleshipController battleship = target.GetComponent<BattleshipController>();
+        if (battleship != null)
+        {
+            if (battleship.IsAware)
+            {
+                return 1f;
+            }
+            float dist = Vector3.Distance(playerPosition, target.position);
+            float outerRange = battleship.awarenessRange * 2f;
+            if (dist < outerRange)
+            {
+                return Mathf.InverseLerp(outerRange, battleship.awarenessRange, dist) * 0.5f;
+            }
+            return 0f;
         }
 
         // Turret: only show danger color if the turret can actually see the player
