@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 02db46bcdeb35a74cad670bcb243b251
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287937
+  packageName: Retro Shaders Pro for URP
+  packageVersion: 1.5.2
+  assetPath: Assets/Retro Shaders Pro/Shaders/Retro Base/retro-graphs-v1.5.unitypackage
+  uploadId: 866924

@@ -250,16 +250,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1431956175977368010}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalRotation: {x: -0.0000000066356725, y: -4.6566123e-10, z: -0.9606978, w: 0.27759618}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.01244718, y: 0.098213196, z: 0.010190787}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4384096085938567496}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -147.766}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: -0.2985}
+  m_AnchoredPosition: {x: -0.0385, y: 0.0565}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6684308775317712289
@@ -5506,16 +5506,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3118066726371013147}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -9.313226e-10, y: -0, z: -0.269733, w: 0.96293515}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.01244718, y: 0.098213196, z: 0.010190787}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4384096085938567496}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -31.297}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: -0.147}
+  m_AnchoredPosition: {x: 0.035, y: 0.059}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2966260292055951057
@@ -20703,8 +20703,8 @@ MonoBehaviour:
   surfaceMask:
     serializedVersion: 2
     m_Bits: 64
-  dashGraceTime: 0.15
-  surfaceDashSpeed: 110
+  dashGraceTime: 0.2
+  surfaceDashSpeed: 100
   airDashSpeed: 70
   reboundDotThreshold: 0.5
   surfaceTangentWeight: 0.9
@@ -20719,7 +20719,7 @@ MonoBehaviour:
   chainSpeedBonusPerLevel: 0.1
   maxChainLevel: 5
   maxDashCharges: 3
-  dashRechargeTime: 2
+  dashRechargeTime: 1.5
   alignmentSpeed: 30
   maxBodyAngle: 60
   noiseIntensity: 1
@@ -20735,6 +20735,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47bce8df49bbf314a892de94260316fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  isVisible: 1
   maxHealth: 10
   currentHealth: 10
   invulnerabilityTime: 0.15
@@ -26037,7 +26038,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6216638421412429249}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.0789}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0787}
   m_LocalScale: {x: 0.6101583, y: 0.44874674, z: 0.6101583}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -26048,7 +26049,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0.1984}
+  m_AnchoredPosition: {x: 0.0024, y: 0.1324}
   m_SizeDelta: {x: 1568, y: 839}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &9100954936893151094
@@ -26179,7 +26180,7 @@ MonoBehaviour:
   cameraTransform: {fileID: 0}
   enemyMarkerPrefab: {fileID: 2189704558127902035, guid: 23a914e115082594bb66ac08734e486f, type: 3}
   projectileMarkerPrefab: {fileID: 2582461040936969319, guid: 0d78396004286624e92d5e90580936a6, type: 3}
-  detectionRange: 100
+  detectionRange: 150
   minDistance: 5
   maxDistance: 80
   enemyLayers:
@@ -26200,7 +26201,7 @@ MonoBehaviour:
   suspiciousColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   dangerColor: {r: 1, g: 0, b: 0, a: 1}
   warningDistance: 60
-  warningPulseSpeed: 4
+  warningPulseSpeed: 1
   swayAmount: 0.05
   swaySpeed: 2
   audioSource: {fileID: 0}
@@ -26210,6 +26211,8 @@ MonoBehaviour:
   enemyScanInterval: 0.2
   ringAlpha: 1
   emissionIntensity: 1.1
+  newEnemyPingDuration: 1
+  pingFadeSpeed: 2
   scanDetectionRange: 200
   ringLingerDuration: 1
   ringFadeSpeed: 1
@@ -40926,16 +40929,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8085102993266341757}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 0.01244718, y: 0.098213196, z: 0.010190787}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4384096085938567496}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0, y: 0.126}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6696296166333492381
