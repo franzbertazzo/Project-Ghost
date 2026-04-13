@@ -150,6 +150,7 @@ public class RingRadarController : MonoBehaviour
     private Vector3 camPosition;
     private Vector3 playerPosition;
     private Vector3 ringCenter;
+    private float currentMaxDistance;
 
     // =============================================
     //  Lifecycle
@@ -214,6 +215,7 @@ public class RingRadarController : MonoBehaviour
         // --- Scan mode (brake hold) ---
         UpdateScanMode();
         float activeDetectionRange = scanActive || ringLingerTimer > 0f ? scanDetectionRange : detectionRange;
+        currentMaxDistance = detectionRange;
 
         // --- Scan ---
         enemyScanTimer -= Time.deltaTime;
@@ -452,7 +454,7 @@ public class RingRadarController : MonoBehaviour
 
             Vector3 dir = cluster.averageDirection.normalized;
             float distance = cluster.closestDistance;
-            float normalizedDistance = Mathf.Clamp01(Mathf.InverseLerp(minDistance, maxDistance, distance));
+            float normalizedDistance = Mathf.Clamp01(Mathf.InverseLerp(minDistance, currentMaxDistance, distance));
 
             // Build ring axes
             Vector3 referenceUp = playerTransform.up;
@@ -710,7 +712,7 @@ public class RingRadarController : MonoBehaviour
         float distance = toTarget.magnitude;
 
         // 0 = close, 1 = far
-        normalizedDistance = Mathf.Clamp01(Mathf.InverseLerp(minDistance, maxDistance, distance));
+        normalizedDistance = Mathf.Clamp01(Mathf.InverseLerp(minDistance, currentMaxDistance, distance));
 
         // Direction from player toward target
         Vector3 dirToTarget = distance > 0.001f ? toTarget / distance : playerTransform.forward;

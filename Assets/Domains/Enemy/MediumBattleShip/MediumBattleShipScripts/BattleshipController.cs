@@ -290,13 +290,20 @@ public class BattleshipController : MonoBehaviour
                 Instantiate(cockpitSmokePrefab, cockpit.position, Quaternion.identity, cockpit);
             }
 
-            // Enable cockpit health so player can damage it
-            EnemyHealth cockpitHealth = cockpit.GetComponent<EnemyHealth>();
-            if (cockpitHealth != null)
+            // Ensure cockpit has a collider so bullets can hit it
+            if (cockpit.GetComponent<Collider>() == null)
             {
-                cockpitHealth.isDamageable = true;
-                cockpitHealth.onDamageTaken += OnCockpitDamaged;
+                cockpit.gameObject.AddComponent<BoxCollider>();
             }
+
+            // Ensure cockpit has EnemyHealth and is always damageable
+            EnemyHealth cockpitHealth = cockpit.GetComponent<EnemyHealth>();
+            if (cockpitHealth == null)
+            {
+                cockpitHealth = cockpit.gameObject.AddComponent<EnemyHealth>();
+            }
+            cockpitHealth.isDamageable = true;
+            cockpitHealth.onDamageTaken += OnCockpitDamaged;
 
             // Blink and destroy after delay
             cockpitBlinkCoroutine = StartCoroutine(BlinkAndDestroy(cockpit.gameObject));

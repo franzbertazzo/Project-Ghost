@@ -99,9 +99,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HomingMissile
   speed: 18
   rotationSpeed: 180
-  damage: 20
+  damage: 200
   lifetime: 100
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!1 &6971818793622256272
 GameObject:
   m_ObjectHideFlags: 0

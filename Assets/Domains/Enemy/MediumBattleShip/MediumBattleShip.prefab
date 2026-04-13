@@ -454,7 +454,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &5460416509069109637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -625,7 +625,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &1300789664762292625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -886,7 +886,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &8957982235080156398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1223,7 +1223,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &5318092823444590671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1589,8 +1589,6 @@ GameObject:
   - component: {fileID: 3191302559976308955}
   - component: {fileID: 3179786689950260449}
   - component: {fileID: 3173151074705798789}
-  - component: {fileID: 3224002633782688799}
-  - component: {fileID: 8674226648244120276}
   m_Layer: 7
   m_Name: Cockpit
   m_TagString: Untagged
@@ -1670,43 +1668,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &3224002633782688799
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3197207356090490991}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 43392454212894518, guid: 37454a0719f20b1448734c7e5a1db83b, type: 2}
---- !u!114 &8674226648244120276
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3197207356090490991}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 384bce36363434c48ae4aa205b434d1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 100
-  isRadarDetectable: 0
-  isDamageable: 1
 --- !u!1 &3650860915092093154
 GameObject:
   m_ObjectHideFlags: 0
@@ -2009,7 +1970,7 @@ MonoBehaviour:
   forceField: {fileID: 3912354987420911591}
   shieldGenerator: {fileID: 6670538090143512014}
   shieldRegenDelay: 10
-  shieldRegenHealth: 250
+  shieldRegenHealth: 1000
   containers:
   - {fileID: 1111484978289894441}
   - {fileID: 6880859165158492308}
@@ -2330,7 +2291,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &8542906048553421295
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2716,7 +2677,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 82.06679, y: 82.06679, z: 185.79102}
+  m_LocalScale: {x: 38.861103, y: 79.71181, z: 180.45958}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3008020307015737881}
@@ -2728,7 +2689,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7480057310680949651}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: -1579241630799410176, guid: 3be8db39816a65146a53e0a046a785fd, type: 3}
 --- !u!23 &4431096074344161159
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2984,7 +2945,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &8743940152989535122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3321,7 +3282,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &1815358974656079234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3492,7 +3453,7 @@ MonoBehaviour:
   debrisTorque: 2
   blinkDuration: 1.5
   blinkRate: 0.05
-  explosionPrefab: {fileID: 4771820074433673520, guid: 336472e34efd7f4479dfe2e8e6ecd774, type: 3}
+  explosionPrefab: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
 --- !u!114 &6253225994601330106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3664,15 +3625,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: burstCooldown
-      value: 0.4
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3766,15 +3731,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: burstCooldown
-      value: 0.4
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3868,15 +3837,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: burstCooldown
-      value: 0.4
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4127,9 +4100,17 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: burstCooldown
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
       value: 0.3
@@ -4226,15 +4207,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: burstCooldown
-      value: 0.4
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4328,15 +4313,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: burstCooldown
-      value: 0.4
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4429,9 +4418,17 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: burstCooldown
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
       value: 0.3
@@ -4528,15 +4525,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: burstCooldown
-      value: 0.4
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: bulletsPerBurst
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
+      propertyPath: explosionPrefab
+      value: 
+      objectReference: {fileID: 4771820074433673520, guid: 59182119640e992499c7ccba23c5a083, type: 3}
+    - target: {fileID: 7700007600330052340, guid: 7455a2f04936c8443940a7de915e8874, type: 3}
       propertyPath: timeBetweenShots
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

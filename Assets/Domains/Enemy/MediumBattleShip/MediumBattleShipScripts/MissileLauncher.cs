@@ -11,6 +11,7 @@ public class MissileLauncher : MonoBehaviour
     public float detectionRange = 80f;
 
     private Transform target;
+    private PlayerHealth playerHealth;
     private float fireTimer;
     private int currentFirePointIndex;
     private Collider[] shipColliders;
@@ -28,6 +29,7 @@ public class MissileLauncher : MonoBehaviour
         if (player != null)
         {
             target = player.transform;
+            playerHealth = player.GetComponent<PlayerHealth>();
         }
     }
 
@@ -36,6 +38,11 @@ public class MissileLauncher : MonoBehaviour
         if (target == null)
         {
             FindPlayer();
+            return;
+        }
+
+        if (playerHealth != null && !playerHealth.isVisible)
+        {
             return;
         }
 

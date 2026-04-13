@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: backwards
+  m_Name: dashForward
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -19,7 +19,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: -80.817, y: 147.134, z: 25.443}
+        value: {x: -15.633, y: -3.922, z: -190.333}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -27,8 +27,17 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 3.75
-        value: {x: -80.817, y: 147.134, z: 25.443}
+        time: 0.16666667
+        value: {x: 50.137, y: -18.858, z: -195.634}
+        inSlope: {x: 0, y: 0, z: 0}
+        outSlope: {x: 0, y: 0, z: 0}
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+      - serializedVersion: 3
+        time: 1
+        value: {x: 50.137, y: -18.858, z: -195.634}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -38,13 +47,13 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
   - curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: -80.748, y: -147.14, z: -25.385}
+        value: {x: -9.989, y: -0.295, z: -176.302}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -52,8 +61,17 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 3.75
-        value: {x: -80.748, y: -147.14, z: -25.385}
+        time: 0.16666667
+        value: {x: 31.072, y: 22.95, z: -162.959}
+        inSlope: {x: 0, y: 0, z: 0}
+        outSlope: {x: 0, y: 0, z: 0}
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+      - serializedVersion: 3
+        time: 1
+        value: {x: 31.072, y: 22.95, z: -162.959}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -63,30 +81,14 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
-  - curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: {x: 0, y: 0, z: 0}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0, y: 0.33333334, z: 0.33333334}
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
+    path: Rig/RightLeg/RightLeg_target
   m_PositionCurves:
   - curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: 0.059, y: 0.735, z: 0.827}
+        value: {x: -0.06, y: 0.796, z: -0.311}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -94,8 +96,17 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 3.75
-        value: {x: -0.128, y: 0.349, z: 0.6053228}
+        time: 0.16666667
+        value: {x: -0.073, y: 0.631, z: -0.768}
+        inSlope: {x: -0.043999996, y: -0.268, z: 0}
+        outSlope: {x: -0.043999996, y: -0.268, z: 0}
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+      - serializedVersion: 3
+        time: 1
+        value: {x: -0.103999995, y: 0.528, z: -0.623}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -105,13 +116,13 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
+    path: Rig/LeftLeg/LeftLeg_target
   - curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: -0.13, y: 0.291, z: 0.463}
+        value: {x: 0.074, y: 0.71, z: -0.233}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -119,17 +130,17 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 1.95
-        value: {x: -0.186, y: 0.32, z: 0.439}
-        inSlope: {x: 0, y: 0.020266669, z: 0}
-        outSlope: {x: 0, y: 0.020266669, z: 0}
+        time: 0.16666667
+        value: {x: 0.16, y: 0.62, z: -0.785}
+        inSlope: {x: 0, y: -0.19299996, z: 0}
+        outSlope: {x: 0, y: -0.19299996, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 3.75
-        value: {x: -0.12, y: 0.367, z: 0.527}
+        time: 1
+        value: {x: 0.129, y: 0.517, z: -0.64}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -139,13 +150,13 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/RightLeg/RightLeg_target
   - curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: -0.002, y: 0.179, z: 0.698}
+        value: {x: -0.885, y: 0.61613315, z: 0.90436}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -153,8 +164,8 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 1.95
-        value: {x: 0.049, y: 0.3704166, z: 0.6083035}
+        time: 0.16666667
+        value: {x: -0.251, y: 0.61613315, z: 0.90436}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -162,8 +173,8 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 3.75
-        value: {x: 0.048, y: 0.3704166, z: 0.698}
+        time: 1
+        value: {x: -0.251, y: 0.61613315, z: 0.90436}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -173,13 +184,13 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EvironmentInteractionRig/RightLeg/RightLeg_hint
+    path: Rig/LeftLeg/LeftLeg_hint
   - curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: 0.052, y: 0.268, z: 0.41}
+        value: {x: 0.758, y: 0.61613315, z: 0.90436}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -187,17 +198,17 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 1.95
-        value: {x: 0.058, y: 0.342, z: 0.447}
-        inSlope: {x: 0.0023999999, y: 0.014933332, z: 0.029333329}
-        outSlope: {x: 0.0023999999, y: 0.014933332, z: 0.029333329}
+        time: 0.16666667
+        value: {x: 0.086, y: 0.61613315, z: 0.90436}
+        inSlope: {x: 0, y: 0, z: 0}
+        outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 3.75
-        value: {x: 0.061, y: 0.356, z: 0.52}
+        time: 1
+        value: {x: 0.086, y: 0.61613315, z: 0.90436}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -207,7 +218,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/RightLeg/RightLeg_hint
   m_ScaleCurves: []
   m_FloatCurves: []
   m_PPtrCurves: []
@@ -219,7 +230,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 2977417862
+      path: 2464088978
       attribute: 1
       script: {fileID: 0}
       typeID: 4
@@ -228,7 +239,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 1486414083
+      path: 1675374640
       attribute: 1
       script: {fileID: 0}
       typeID: 4
@@ -237,7 +248,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 51837205
+      path: 4086645148
       attribute: 1
       script: {fileID: 0}
       typeID: 4
@@ -246,7 +257,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 3173313453
+      path: 799506045
       attribute: 1
       script: {fileID: 0}
       typeID: 4
@@ -255,7 +266,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 1486414083
+      path: 2464088978
       attribute: 4
       script: {fileID: 0}
       typeID: 4
@@ -264,16 +275,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 3173313453
-      attribute: 4
-      script: {fileID: 0}
-      typeID: 4
-      customType: 4
-      isPPtrCurve: 0
-      isIntCurve: 0
-      isSerializeReferenceCurve: 0
-    - serializedVersion: 2
-      path: 2977417862
+      path: 1675374640
       attribute: 4
       script: {fileID: 0}
       typeID: 4
@@ -287,7 +289,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 3.75
+    m_StopTime: 1
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -309,7 +311,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.059
+        value: -0.06
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -317,107 +319,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: -0.128
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalPosition.x
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0.735
-        inSlope: 0
-        outSlope: 0
+        time: 0.16666667
+        value: -0.073
+        inSlope: -0.043999996
+        outSlope: -0.043999996
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.349
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalPosition.y
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0.827
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 3.75
-        value: 0.6053228
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalPosition.z
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: -0.13
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 1.95
-        value: -0.186
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 3.75
-        value: -0.12
+        time: 1
+        value: -0.103999995
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -428,7 +340,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -438,7 +350,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.291
+        value: 0.796
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -446,17 +358,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.32
-        inSlope: 0.020266669
-        outSlope: 0.020266669
+        time: 0.16666667
+        value: 0.631
+        inSlope: -0.268
+        outSlope: -0.268
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.367
+        time: 1
+        value: 0.528
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -467,7 +379,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -477,7 +389,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.463
+        value: -0.311
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -485,8 +397,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.439
+        time: 0.16666667
+        value: -0.768
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -494,8 +406,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.527
+        time: 1
+        value: -0.623
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -506,7 +418,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -516,7 +428,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -80.817
+        value: -15.633
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -524,8 +436,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: -80.817
+        time: 0.16666667
+        value: 50.137
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 50.137
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -536,7 +457,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.x
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 16
@@ -546,7 +467,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 147.134
+        value: -3.922
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -554,8 +475,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 147.134
+        time: 0.16666667
+        value: -18.858
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: -18.858
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -566,7 +496,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.y
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 16
@@ -576,7 +506,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 25.443
+        value: -190.333
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -584,8 +514,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 25.443
+        time: 0.16666667
+        value: -195.634
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: -195.634
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -596,7 +535,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.z
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 16
@@ -606,7 +545,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -0.002
+        value: 0.074
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -614,8 +553,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.049
+        time: 0.16666667
+        value: 0.16
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -623,8 +562,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.048
+        time: 1
+        value: 0.129
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -635,7 +574,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: EvironmentInteractionRig/RightLeg/RightLeg_hint
+    path: Rig/RightLeg/RightLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -645,7 +584,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.179
+        value: 0.71
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -653,17 +592,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.3704166
-        inSlope: 0
-        outSlope: 0
+        time: 0.16666667
+        value: 0.62
+        inSlope: -0.19299996
+        outSlope: -0.19299996
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.3704166
+        time: 1
+        value: 0.517
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -674,7 +613,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: EvironmentInteractionRig/RightLeg/RightLeg_hint
+    path: Rig/RightLeg/RightLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -684,7 +623,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.698
+        value: -0.233
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -692,8 +631,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.6083035
+        time: 0.16666667
+        value: -0.785
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -701,8 +640,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.698
+        time: 1
+        value: -0.64
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -713,7 +652,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: EvironmentInteractionRig/RightLeg/RightLeg_hint
+    path: Rig/RightLeg/RightLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -723,7 +662,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.052
+        value: -9.989
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -731,17 +670,134 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.058
-        inSlope: 0.0023999999
-        outSlope: 0.0023999999
+        time: 0.16666667
+        value: 31.072
+        inSlope: 0
+        outSlope: 0
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.061
+        time: 1
+        value: 31.072
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: localEulerAnglesRaw.x
+    path: Rig/RightLeg/RightLeg_target
+    classID: 4
+    script: {fileID: 0}
+    flags: 16
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: -0.295
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.16666667
+        value: 22.95
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 22.95
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: localEulerAnglesRaw.y
+    path: Rig/RightLeg/RightLeg_target
+    classID: 4
+    script: {fileID: 0}
+    flags: 16
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: -176.302
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.16666667
+        value: -162.959
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: -162.959
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    attribute: localEulerAnglesRaw.z
+    path: Rig/RightLeg/RightLeg_target
+    classID: 4
+    script: {fileID: 0}
+    flags: 16
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: -0.885
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.16666667
+        value: -0.251
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: -0.251
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -752,7 +808,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_hint
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -762,7 +818,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.268
+        value: 0.61613315
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -770,17 +826,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.342
-        inSlope: 0.014933332
-        outSlope: 0.014933332
+        time: 0.16666667
+        value: 0.61613315
+        inSlope: 0
+        outSlope: 0
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.356
+        time: 1
+        value: 0.61613315
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -791,7 +847,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_hint
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -801,7 +857,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.41
+        value: 0.90436
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -809,17 +865,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1.95
-        value: 0.447
-        inSlope: 0.029333329
-        outSlope: 0.029333329
+        time: 0.16666667
+        value: 0.90436
+        inSlope: 0
+        outSlope: 0
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: 0.52
+        time: 1
+        value: 0.90436
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -830,7 +886,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_hint
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -840,7 +896,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -80.748
+        value: 0.758
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -848,8 +904,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: -80.748
+        time: 0.16666667
+        value: 0.086
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.086
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -859,18 +924,18 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: localEulerAnglesRaw.x
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    attribute: m_LocalPosition.x
+    path: Rig/RightLeg/RightLeg_hint
     classID: 4
     script: {fileID: 0}
-    flags: 16
+    flags: 0
   - serializedVersion: 2
     curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -147.14
+        value: 0.61613315
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -878,29 +943,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: -147.14
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: localEulerAnglesRaw.y
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
-    classID: 4
-    script: {fileID: 0}
-    flags: 16
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: -25.385
+        time: 0.16666667
+        value: 0.61613315
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -908,8 +952,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 3.75
-        value: -25.385
+        time: 1
+        value: 0.61613315
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -919,74 +963,50 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: localEulerAnglesRaw.z
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    attribute: m_LocalPosition.y
+    path: Rig/RightLeg/RightLeg_hint
     classID: 4
     script: {fileID: 0}
-    flags: 16
+    flags: 0
   - serializedVersion: 2
     curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
+        value: 0.90436
         inSlope: 0
         outSlope: 0
         tangentMode: 136
         weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: localEulerAnglesRaw.x
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 16
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
+        inWeight: 0.33333334
+        outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0
-        value: 0
+        time: 0.16666667
+        value: 0.90436
         inSlope: 0
         outSlope: 0
         tangentMode: 136
         weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: localEulerAnglesRaw.y
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 16
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
+        inWeight: 0.33333334
+        outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0
-        value: 0
+        time: 1
+        value: 0.90436
         inSlope: 0
         outSlope: 0
         tangentMode: 136
         weightedMode: 0
-        inWeight: 0
-        outWeight: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: localEulerAnglesRaw.z
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
+    attribute: m_LocalPosition.z
+    path: Rig/RightLeg/RightLeg_hint
     classID: 4
     script: {fileID: 0}
-    flags: 16
+    flags: 0
   m_EulerEditorCurves:
   - serializedVersion: 2
     curve:
@@ -996,7 +1016,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1008,7 +1028,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1020,7 +1040,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: EvironmentInteractionRig/RightLeg/RightLeg_target
+    path: Rig/LeftLeg/LeftLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1032,7 +1052,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/RightLeg/RightLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1044,7 +1064,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
+    path: Rig/RightLeg/RightLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1056,43 +1076,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_target
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.x
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.y
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.z
-    path: EvironmentInteractionRig/LeftLeg/RightLeg_hint
+    path: Rig/RightLeg/RightLeg_target
     classID: 4
     script: {fileID: 0}
     flags: 0
