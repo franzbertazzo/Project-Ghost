@@ -2789,9 +2789,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f500afff29ce4814ebf2985c034d4c1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ForceFieldShield
-  fullHealthColor: {r: 0.2, g: 0.4, b: 1, a: 0.18431373}
-  midHealthColor: {r: 1, g: 0.9, b: 0.2, a: 0.18431373}
-  lowHealthColor: {r: 1, g: 0.2, b: 0.1, a: 0.18431373}
+  fullHealthColor: {r: 0.2, g: 0.4, b: 1, a: 0.3137255}
+  midHealthColor: {r: 1, g: 0.9, b: 0.2, a: 0.30588236}
+  lowHealthColor: {r: 1, g: 0.2, b: 0.1, a: 0.3137255}
   colorTransitionSpeed: 3
   hitFlashDuration: 0.15
   hitFadeSpeed: 4
