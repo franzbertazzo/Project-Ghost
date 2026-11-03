@@ -80,6 +80,20 @@ namespace Game.Weapons
         [Tooltip("Spawned locally on every client when the rocket detonates. Never networked.")]
         [SerializeField] private GameObject explosionPrefab;
 
+        [Header("Receiver lead")]
+        [Tooltip("The mesh, pushed forward on every peer but the host to cancel the delay the " +
+                 "synced transform arrives with. Only the visual moves - the networked root, and " +
+                 "so every hit the host resolves, is untouched.")]
+        [SerializeField] private Transform visual;
+
+        [Tooltip("Multiplier on the computed lead. 1 aims the mesh at where the host actually has " +
+                 "the rocket; 0 disables the whole thing and puts the picture back to what it was.")]
+        [Range(0f, 2f)]
+        [SerializeField] private float visualLead = 1f;
+
+        [Tooltip("Hard cap in metres, so a latency spike cannot throw the mesh across the arena.")]
+        [SerializeField] private float maxVisualLead = 8f;
+
         private static readonly List<Rocket> _active = new();
 
         /// <summary>
@@ -183,10 +197,17 @@ namespace Game.Weapons
 
         private void Update()
         {
-            // Only the host simulates. Clients render whatever the synced transform says, so a
-            // rocket cannot exist in one place on one screen and somewhere else on another.
-            if (!isServer || _detonated)
+            if (_detonated)
                 return;
+
+            // Only the host simulates. Clients render whatever the synced transform says, so a
+            // rocket cannot exist in one place on one screen and somewhere else on another - but
+            // what it says is always behind, which is what LeadVisual compensates for.
+            if (!isServer)
+            {
+                LeadVisual();
+                return;
+            }
 
             _age += Time.deltaTime;
             if (_age >= lifetime)
@@ -196,6 +217,7 @@ namespace Game.Weapons
             }
 
             Steer(Time.deltaTime);
+
 
             float step = speed * Time.deltaTime;
 
@@ -336,6 +358,45 @@ namespace Game.Weapons
         /// Fires the explosion on every client. Only the position travels - the VFX, the light and
         /// the audio are spawned locally from it.
         /// </summary>
+        /// <summary>
+        /// Pushes the mesh forward by however far the synced transform is behind.
+        ///
+        /// The rocket is simulated only on the host, so every other peer renders it from an
+        /// interpolated transform that is late by their latency plus the interpolation buffer. At
+        /// 35 m/s and 100ms that is three and a half metres, against a four metre kill radius - so
+        /// a rocket that visually passed beside you killed you anyway, and the host was the only
+        /// player whose eyes told the truth. That is the whole of the host's rocket advantage, and
+        /// it is on the receiving end rather than the firing end.
+        ///
+        /// Only the visual moves. The networked root still carries the authoritative position, so
+        /// every hit the host resolves is unchanged - this makes the picture agree with the
+        /// decision rather than altering the decision. It also lines the rocket up with its own
+        /// explosion, which already spawns at the host's true detonation point because that
+        /// position travels inside <see cref="OnDetonated"/>.
+        /// </summary>
+        private void LeadVisual()
+        {
+            if (visual == null || visualLead <= 0f)
+                return;
+
+            var tick = networkManager != null ? networkManager.tickModule : null;
+            if (tick == null || tick.rtt <= 0f)
+                return;
+
+            float tickDelta = 1f / Mathf.Max(1, tick.tickRate);
+
+            // PurrNet's rtt bakes in two ticks of pack/unpack delay - the status HUD labels it for
+            // the same reason - so that bias comes off before halving it into a one-way estimate.
+            float oneWay = Mathf.Max(0f, (float)tick.rtt - 2f * tickDelta) * 0.5f;
+
+            // Plus the buffer the NetworkTransform deliberately renders behind by, which on this
+            // prefab is one to two ticks.
+            float behind = oneWay + 1.5f * tickDelta;
+
+            visual.localPosition =
+                Vector3.forward * Mathf.Min(maxVisualLead, speed * behind * visualLead);
+        }
+
         [ObserversRpc(runLocally: true)]
         private void OnDetonated(Vector3 position)
         {

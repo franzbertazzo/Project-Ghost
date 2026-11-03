@@ -56,6 +56,22 @@ namespace Game.Weapons
                  "claiming it fired from somewhere across the arena.")]
         [SerializeField] private float originTolerance = 6f;
 
+        [Tooltip("Validate claims against where the target WAS when the shot was fired, using " +
+                 "PurrNet's collider rollback history. Needs a ColliderRollback component on the " +
+                 "player. Off falls back to the loose current-position check.")]
+        [SerializeField] private bool useRollback = true;
+
+        [Tooltip("Tolerance used when the rollback history answered. Tight on purpose: with the " +
+                 "staleness removed, the only slack still needed is the body's own size plus a " +
+                 "little for the interpolation estimate, instead of a whole round trip of travel.")]
+        [SerializeField] private float rewoundTolerance = 2.5f;
+
+        [Tooltip("Extra ticks to rewind beyond rollbackTick, covering the interpolation buffer " +
+                 "remote bodies are rendered behind by. This prefab's NetworkTransform buffers " +
+                 "one to two ticks.")]
+        [Range(0f, 6f)]
+        [SerializeField] private float extraRollbackTicks = 1.5f;
+
         [Header("Presentation")]
         [Tooltip("Tracer drawn from muzzle to impact. Spawned locally on every client.")]
         [SerializeField] private GameObject tracerPrefab;
@@ -129,7 +145,13 @@ namespace Game.Weapons
             if (!isServer)
                 ShowBoltLocal(origin, end, claimed, bodyOffset);
 
-            RequestFire(origin, direction, claimed, end, bodyOffset);
+            // The server tick matching what this client can currently see. PurrNet computes it as
+            // syncedPreciseTick minus half the RTT, which is exactly "the state I am looking at" -
+            // so the host can judge the shot against the world the shooter had, instead of against
+            // a slop radius around the world it has now.
+            double firedAt = FiringTick();
+
+            RequestFire(origin, direction, claimed, end, bodyOffset, firedAt);
         }
 
         /// <summary>
@@ -145,8 +167,10 @@ namespace Game.Weapons
         /// </summary>
         [ServerRpc(requireOwnership: true)]
         private void RequestFire(Vector3 origin, Vector3 direction, PlayerID claimed, Vector3 end,
-            Vector3 bodyOffset)
+            Vector3 bodyOffset, double firedAt)
         {
+            _claimTick = firedAt;
+
             if (direction.sqrMagnitude < 0.0001f)
                 return;
 
@@ -190,6 +214,86 @@ namespace Game.Weapons
         /// agrees on - only players move. What a client can get away with is a few metres of
         /// staleness, which is the same few metres it was being punished for before.
         /// </summary>
+        /// <summary>
+        /// The tick whose world the shooter was looking at when it fired.
+        ///
+        /// <c>rollbackTick</c> is PurrNet's own answer to this: the synced server tick minus half
+        /// the RTT. On the host it degenerates to the current tick, since there is no trip and
+        /// nothing to rewind - which is exactly right, and means the host needs no special case.
+        ///
+        /// The extra ticks come off on top, because rollbackTick accounts for the wire but not for
+        /// the interpolation buffer the NetworkTransform deliberately renders remote bodies behind
+        /// by. Without them the host rewinds slightly less far than the shooter's eyes actually saw.
+        /// </summary>
+        private double FiringTick()
+        {
+            var tick = networkManager != null ? networkManager.tickModule : null;
+
+            if (tick == null)
+                return 0d;
+
+            return tick.rollbackTick - extraRollbackTicks;
+        }
+
+        /// <summary>
+        /// Asks the rollback module where the target's collider was at the claimed tick.
+        ///
+        /// False means the question could not be answered - no module, no registered collider, or
+        /// a tick older than the recorded history - and the caller falls back to the loose current
+        /// position check rather than rejecting the shot. A client should not lose hits because the
+        /// host forgot where everyone was.
+        /// </summary>
+        private bool TryGetPastPosition(Game.Networking.PlayerVitals target, out Vector3 position)
+        {
+            position = target.MarkerPosition;
+
+            if (!useRollback || _claimTick <= 0d)
+                return false;
+
+            var collider = target.HitCollider;
+            if (collider == null)
+                return false;
+
+            var module = Rollback();
+            if (module == null)
+                return false;
+
+            if (!module.TryGetColliderState(_claimTick, collider, out var state))
+                return false;
+
+            position = state.position;
+            return true;
+        }
+
+        /// <summary>
+        /// The scene's rollback module, resolved once. Reached through the factory the same way
+        /// PurrNet's own ColliderRollback component does.
+        /// </summary>
+        private PurrNet.Modules.RollbackModule Rollback()
+        {
+            if (_rollback != null)
+                return _rollback;
+
+            if (networkManager == null)
+                return null;
+
+            if (!networkManager.TryGetModule<PurrNet.Modules.ScenesModule>(true, out var scenes))
+                return null;
+
+            if (!scenes.TryGetSceneID(gameObject.scene, out var sceneId))
+                return null;
+
+            if (!networkManager.TryGetModule<PurrNet.Modules.ColliderRollbackFactory>(true,
+                    out var factory))
+                return null;
+
+            factory.TryGetModule(sceneId, out _rollback);
+            return _rollback;
+        }
+
+        private PurrNet.Modules.RollbackModule _rollback;
+        private double _claimTick;
+
         private bool AcceptClaim(PlayerID claimed, Vector3 origin, Vector3 point,
             out Game.Networking.PlayerVitals target)
         {
@@ -229,8 +333,15 @@ namespace Game.Weapons
 
             float distance = Vector3.Distance(origin, point);
 
-            if (distance > range ||
-                Vector3.Distance(point, target.MarkerPosition) > claimTolerance)
+            // Where the target was when the shooter fired, if the rollback module has that tick on
+            // record. That is the position the shooter was actually looking at, so the claim can be
+            // held to the body's own size rather than to a window wide enough to cover a round trip
+            // of movement. Falls back to the current position and the loose tolerance when there is
+            // no history - a player who just spawned, or a build without the component wired.
+            bool rewound = TryGetPastPosition(target, out var reference);
+            float tolerance = rewound ? rewoundTolerance : claimTolerance;
+
+            if (distance > range || Vector3.Distance(point, reference) > tolerance)
             {
                 target = null;
                 return false;

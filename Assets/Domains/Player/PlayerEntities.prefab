@@ -83408,6 +83408,7 @@ GameObject:
   - component: {fileID: 4924679022621645486}
   - component: {fileID: 3636444917222687098}
   - component: {fileID: 6118215517944320504}
+  - component: {fileID: 6111738105623319001}
   m_Layer: 0
   m_Name: PlayerEntities
   m_TagString: Untagged
@@ -83578,6 +83579,21 @@ MonoBehaviour:
   trailMinimumForce: 18
   trailSecondsPerForce: 0.03
   maxTrailSeconds: 3
+--- !u!114 &6111738105623319001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6111738105623314181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15780e97d72f9104db84d77a763c6fe6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _storeHistoryInSeconds: 5
+  _autoAddAllChildren: 1
+  _colliders3D: []
 --- !u!114 &6118215517944320504
 MonoBehaviour:
   m_ObjectHideFlags: 0

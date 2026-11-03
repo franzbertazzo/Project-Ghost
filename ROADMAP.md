@@ -591,6 +591,45 @@ ring-outs became the win condition.
     `lockDistance`, `reticleScale` → `ringScale`), since the prefab's `lockRange: 20` and
     `reticleScale: 0.4` would otherwise have overridden the new defaults. Fourth time this trap has
     come up; renaming is the only reliable way past it without touching the prefab.
+- [x] **Primary fire now validates against where the target *was*, not a slop radius around where
+  it is.** The 10m `claimTolerance` was honest but blunt — it had to cover a whole round trip of
+  movement, which is also how much a client could lie by. PurrNet ships `ColliderRollback`, so the
+  exact version was already in the package:
+  - The client sends `tickModule.rollbackTick` — PurrNet's own `syncedPreciseTick - halfRTT`, which
+    is precisely "the state I am looking at". On the host it degenerates to the current tick, since
+    there is no trip and nothing to rewind, so the host needs no special case at all.
+  - `extraRollbackTicks` (1.5) comes off on top: `rollbackTick` accounts for the wire but not for
+    the interpolation buffer the `NetworkTransform` deliberately renders remote bodies behind by,
+    so without it the host rewinds slightly less far than the shooter's eyes actually saw.
+  - The host asks `RollbackModule.TryGetColliderState` for that tick and compares the claimed
+    impact against *that* position, held to `rewoundTolerance` (2.5m — the body's own size) instead
+    of 10m. The module is reached through `ColliderRollbackFactory` exactly as PurrNet's own
+    `ColliderRollback` component does it.
+  - **Degrades rather than rejects.** No module, no registered collider, or a tick older than the
+    5s history falls back to the old loose check against the current position. A client should not
+    lose hits because the host forgot where everyone was.
+  - Needed a `ColliderRollback` component on the player prefab (`_autoAddAllChildren`, 5s history)
+    and a `PlayerVitals.HitCollider` to name one collider per body, since the history is keyed per
+    collider and the lookup has to ask about the same one every time.
+- [x] **Fixed: the host's rocket advantage was on the receiving end, not the firing end.** Rocket
+  *aim* was already client-authored — `TryFire` resolves the lock on the shooter and sends origin,
+  direction and the locked `PlayerID`, and the host only re-checks the cooldown. And rocket *hits*
+  were already fair: `Rocket.Update` is host-only, so at host-time T it tests the host's rocket
+  against the host's player positions, which are consistent with each other. The unfairness was
+  that every non-host peer *renders* the rocket from an interpolated transform that is late by
+  their latency plus the interpolation buffer. At 35 m/s and 100ms that is **3.5m against a 4m
+  `killRadius`** — a rocket that visually passed beside you killed you anyway, and the host was the
+  only player whose eyes told the truth.
+  - `LeadVisual` pushes the mesh forward on receivers by that measured lag: one-way latency from
+    `tickModule.rtt` (less the two ticks of pack/unpack delay PurrNet bakes into it, the same bias
+    the status HUD labels) plus the ~1.5 ticks the `NetworkTransform` deliberately renders behind
+    by. Capped at 8m so a latency spike cannot throw the mesh across the arena, and `visualLead` 0
+    restores the old picture exactly.
+  - **Only the visual moves.** The networked root still carries the authoritative position, so
+    every hit the host resolves is untouched — this makes the picture agree with the decision
+    rather than changing the decision. It also lines the rocket up with its own explosion, which
+    already spawned at the host's true detonation point because that position travels inside
+    `OnDetonated`; previously the blast appeared *ahead* of the rocket that caused it.
 - [x] **Smoke trail on a rocket hit** (`Assets/Domains/VFX/Smoke trail.prefab`, wired to
   `PlayerVitals.launchTrailPrefab`). Attached to the body while it is flying, so a launched player
   reads as launched from across the arena — which the percentage number alone never did.

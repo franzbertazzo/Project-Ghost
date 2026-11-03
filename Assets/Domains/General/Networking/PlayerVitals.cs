@@ -57,6 +57,35 @@ namespace Game.Networking
         private Canvas[] _canvases;
         private bool[] _canvasWasEnabled;
         private Collider[] _colliders;
+
+        /// <summary>
+        /// One collider standing in for this player's body, for rollback lookups.
+        ///
+        /// The rollback module records history per collider, so validating a claimed hit against
+        /// where this player *was* needs a specific collider to ask about. Any of them would do -
+        /// they all ride the same body - so the first is taken and cached.
+        /// </summary>
+        public Collider HitCollider
+        {
+            get
+            {
+                if (_hitCollider != null)
+                    return _hitCollider;
+
+                foreach (var collider in GetComponentsInChildren<Collider>(true))
+                {
+                    if (collider == null || collider.isTrigger)
+                        continue;
+
+                    _hitCollider = collider;
+                    break;
+                }
+
+                return _hitCollider;
+            }
+        }
+
+        private Collider _hitCollider;
         private bool[] _colliderWasEnabled;
         private PlayerSpawner _spawner;
         private ThirdPersonCameraRig _cameraRig;
