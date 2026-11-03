@@ -6,10 +6,23 @@ using UnityEngine;
 /// tilts its plane so that it passes through the direction toward that entity.
 /// The marker label sits on the ring at the point closest to the entity.
 ///
-/// Setup:
-///   1. Assign enemy and projectile marker prefabs (GameObjects with EnemyMarker / ProjectileMarker).
-///   2. Set enemyLayers / projectileLayers to the physics layers your enemies and projectiles use.
-///   3. Attach this component to any GameObject (auto-finds Player by tag and main camera).
+/// Repointed from PvE to versus: it tracks opposing PLAYERS and ROCKETS, read from their own
+/// registries rather than from physics layers. The layer sweep could not work here - rockets carry
+/// no collider at all (they resolve hits with a SphereCast), so the projectile scan was querying a
+/// layer nothing was ever on.
+///
+/// The two are shown on different terms, because they answer different questions:
+///
+///   - Rockets, always. An incoming rocket is a thing you must react to NOW, and it is the one
+///     threat that can be behind you and still kill you. Hiding it behind a button would mean the
+///     correct play was to hold that button permanently.
+///   - Enemy players, only while braking. Knowing where four drifting players are is powerful
+///     enough that it should cost something, and brake mode is already the game's "slow down and
+///     look" state. Enemies in front of you are covered for free by the on-screen diamonds, so
+///     what the brake actually buys is the 360 degrees you cannot see.
+///
+/// Setup: assign the marker prefabs and attach to the player hierarchy. Everything else resolves
+/// itself.
 /// </summary>
 public class RingRadarController : MonoBehaviour
 {
@@ -30,10 +43,7 @@ public class RingRadarController : MonoBehaviour
     [SerializeField] private float minDistance = 5f;
     [Tooltip("Distance mapped to maximum ring radius")]
     [SerializeField] private float maxDistance = 80f;
-    [Tooltip("Physics layers containing enemy colliders")]
-    [SerializeField] private LayerMask enemyLayers;
-    [Tooltip("Physics layers containing projectile colliders")]
-    [SerializeField] private LayerMask projectileLayers;
+    // No layer masks: players and rockets come from their own registries. See the class summary.
 
     [Header("Ring")]
     [SerializeField] private float minRadius = 1.5f;
@@ -85,11 +95,6 @@ public class RingRadarController : MonoBehaviour
     [Tooltip("HDR emission multiplier — values > 1 trigger bloom in post-processing")]
     [SerializeField] private float emissionIntensity = 2f;
 
-    [Header("New Enemy Ping")]
-    [Tooltip("How long the ring stays visible when a new enemy is first detected (seconds)")]
-    [SerializeField] private float newEnemyPingDuration = 1f;
-    [Tooltip("How fast the ping fades out after the ping duration expires")]
-    [SerializeField] private float pingFadeSpeed = 2f;
 
     [Header("Scan Mode (Brake Hold)")]
     [Tooltip("Detection range when holding brake to activate scan mode")]
@@ -110,7 +115,7 @@ public class RingRadarController : MonoBehaviour
     // --------------- runtime state ---------------
 
     private PlayerInputHandler inputHandler;
-    private PlayerHealth playerHealth;
+    private Game.Networking.PlayerVitals selfVitals;
     private bool scanActive;
     private float ringLingerTimer;
     private float ringVisibility;
@@ -119,15 +124,17 @@ public class RingRadarController : MonoBehaviour
     private MarkerPool<ProjectileMarker> projectilePool;
 
     private readonly Dictionary<Transform, EnemyMarker> activeEnemyMarkers = new Dictionary<Transform, EnemyMarker>();
-    private readonly Dictionary<Transform, float> enemyPingTimers = new Dictionary<Transform, float>();
-    private readonly Dictionary<Transform, float> enemyPingVisibility = new Dictionary<Transform, float>();
 
     private readonly List<Transform> detectedEnemies = new List<Transform>();
+
+    // Which player each detected body belongs to, so a ring can be named and coloured for them.
+    private readonly Dictionary<Transform, PurrNet.PlayerID?> enemyOwners =
+        new Dictionary<Transform, PurrNet.PlayerID?>();
+
     private readonly List<Transform> detectedProjectiles = new List<Transform>();
     private readonly List<Transform> toRemove = new List<Transform>();
     private readonly HashSet<Transform> detectedSet = new HashSet<Transform>();
 
-    private Collider[] overlapBuffer = new Collider[128];
     private float enemyScanTimer;
     private float audioCooldownTimer;
 
@@ -158,27 +165,39 @@ public class RingRadarController : MonoBehaviour
 
     void Awake()
     {
+        // Resolved from this radar's OWN hierarchy first, never by tag.
+        //
+        // FindGameObjectWithTag("Player") returns an arbitrary player once four of them are in the
+        // scene, so the local radar could anchor itself to a remote player - centring its rings on
+        // someone else's position and drawing the local player as a contact. Harmless in
+        // single-player, wrong the moment a second player exists.
+        selfVitals = GetComponentInParent<Game.Networking.PlayerVitals>();
+
+        if (playerTransform == null && selfVitals != null)
+        {
+            // The MOVING body, not the networked root. The root stays at the spawn point for the
+            // whole match - anchoring the rings to it would leave the radar parked where you
+            // started while you flew away from it.
+            playerTransform = selfVitals.BodyTransform;
+        }
+
+        if (inputHandler == null)
+        {
+            inputHandler = GetComponentInParent<PlayerInputHandler>();
+        }
+
         if (playerTransform == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
                 playerTransform = player.transform;
-                if (inputHandler == null)
-                {
-                    inputHandler = player.GetComponent<PlayerInputHandler>();
-                }
             }
         }
 
         if (inputHandler == null && playerTransform != null)
         {
             inputHandler = playerTransform.GetComponent<PlayerInputHandler>();
-        }
-
-        if (playerTransform != null)
-        {
-            playerHealth = playerTransform.GetComponent<PlayerHealth>();
         }
 
         if (cameraTransform == null && Camera.main != null)
@@ -218,19 +237,36 @@ public class RingRadarController : MonoBehaviour
         currentMaxDistance = detectionRange;
 
         // --- Scan ---
+        //
+        // Enemy players are scanned ONLY while the scan is up (brake held, plus the linger that
+        // fades the rings out). Clearing the list otherwise is what retires the markers: the
+        // existing cleanup pass returns any marker whose target is no longer detected, so the
+        // rings fade on release instead of vanishing.
+        bool scanning = scanActive || ringLingerTimer > 0f;
+
         enemyScanTimer -= Time.deltaTime;
         if (enemyScanTimer <= 0f)
         {
             enemyScanTimer = enemyScanInterval;
+
             if (enemyPool != null)
             {
-                ScanEntities(activeDetectionRange, enemyLayers, detectedEnemies, maxEnemyMarkers, true);
+                if (scanning)
+                {
+                    ScanPlayers(activeDetectionRange);
+                }
+                else
+                {
+                    detectedEnemies.Clear();
+                }
             }
         }
 
+        // Rockets every frame and without gating. They move at 35 m/s and the whole point of the
+        // contact is that you can react to one you cannot see.
         if (enableProjectileRings && projectilePool != null)
         {
-            ScanEntities(activeDetectionRange, projectileLayers, detectedProjectiles, maxProjectileMarkers, false);
+            ScanRockets(detectionRange);
         }
 
         // --- Update markers (projectiles first for visual priority) ---
@@ -239,7 +275,7 @@ public class RingRadarController : MonoBehaviour
             UpdateProjectileMarkers();
             CleanupClusterMarkers();
         }
-        else if (!enableProjectileRings)
+        else if (!enableProjectileRings && projectilePool != null)
         {
             // Return all active cluster markers when disabled
             foreach (var kvp in activeClusterMarkers)
@@ -253,33 +289,23 @@ public class RingRadarController : MonoBehaviour
         {
             UpdateEnemyMarkers();
             CleanupMarkers(detectedEnemies, activeEnemyMarkers, enemyPool);
-
-            // Remove ping entries for markers that were cleaned up
-            var pingKeys = new List<Transform>(enemyPingTimers.Keys);
-            for (int i = 0; i < pingKeys.Count; i++)
-            {
-                if (pingKeys[i] == null || !activeEnemyMarkers.ContainsKey(pingKeys[i]))
-                {
-                    enemyPingTimers.Remove(pingKeys[i]);
-                    enemyPingVisibility.Remove(pingKeys[i]);
-                }
-            }
         }
 
-        // --- Update ping timers and apply ring visibility ---
-        UpdatePingTimers();
+        // --- Apply ring visibility ---
+        //
+        // Enemy rings follow the scan alone. There used to be a "new contact" ping that could
+        // raise a single ring above the scan for a second; it is gone, because under the brake
+        // gate it would flash an enemy's position while you are not braking - exactly the free
+        // information the gate exists to charge for. It also rebuilt two key lists every frame.
         foreach (var kvp in activeEnemyMarkers)
         {
-            float pingVis = 0f;
-            if (kvp.Key != null)
-            {
-                enemyPingVisibility.TryGetValue(kvp.Key, out pingVis);
-            }
-            kvp.Value.SetRingVisibility(Mathf.Max(ringVisibility, pingVis));
+            kvp.Value.SetRingVisibility(ringVisibility);
         }
+
+        // Rocket rings are never gated.
         foreach (var kvp in activeClusterMarkers)
         {
-            kvp.Value.SetRingVisibility(ringVisibility);
+            kvp.Value.SetRingVisibility(1f);
         }
 
         // --- Audio ---
@@ -296,6 +322,14 @@ public class RingRadarController : MonoBehaviour
 
         if (brakeHeld)
         {
+            // Refresh immediately on the press rather than waiting out the scan interval. Enemy
+            // contacts are only available while this is held, so up to 200ms of empty radar after
+            // pressing it reads as the button not working.
+            if (!scanActive)
+            {
+                enemyScanTimer = 0f;
+            }
+
             scanActive = true;
             ringLingerTimer = ringLingerDuration;
         }
@@ -324,36 +358,126 @@ public class RingRadarController : MonoBehaviour
         ringCenter = playerPosition + playerTransform.up * ringVerticalOffset;
     }
 
-    private void ScanEntities(float range, LayerMask layerMask, List<Transform> results, int maxCount, bool resolveEnemyRoot)
+    /// <summary>
+    /// Opposing players within range, from the player registry.
+    ///
+    /// Reads PlayerVitals.All rather than sweeping the player layer, because the registry is the
+    /// only source that also knows who is dead and who is us. A physics sweep returns colliders:
+    /// it cannot tell a living opponent from a corpse awaiting respawn, and the corpse would hold
+    /// a ring on the radar until the round ended.
+    /// </summary>
+    private void ScanPlayers(float range)
     {
-        results.Clear();
+        detectedEnemies.Clear();
         detectedSet.Clear();
+        enemyOwners.Clear();
 
-        int count = Physics.OverlapSphereNonAlloc(playerPosition, range, overlapBuffer, layerMask);
+        var players = Game.Networking.PlayerVitals.All;
+        float rangeSqr = range * range;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < players.Count; i++)
         {
-            Transform root = overlapBuffer[i].transform;
+            var vitals = players[i];
 
-            if (resolveEnemyRoot)
+            if (vitals == null || vitals == selfVitals || !vitals.isSpawned)
             {
-                EnemyHealth eh = overlapBuffer[i].GetComponentInParent<EnemyHealth>();
-                if (eh != null)
-                {
-                    if (!eh.isRadarDetectable)
-                    {
-                        continue;
-                    }
-                    root = eh.transform;
-                }
+                continue;
             }
 
-            if (detectedSet.Add(root))
+            if (!vitals.Vitals.IsAlive)
             {
-                results.Add(root);
+                continue;
+            }
+
+            // The moving body again, for the same reason the radar anchors to ours: a ring aimed
+            // at the networked root would point at that player's spawn point all match. Cached on
+            // the player rather than resolved here - this runs per player, five times a second.
+            Transform body = vitals.BodyTransform;
+
+            if ((body.position - playerPosition).sqrMagnitude > rangeSqr)
+            {
+                continue;
+            }
+
+            if (detectedSet.Add(body))
+            {
+                detectedEnemies.Add(body);
+                enemyOwners[body] = vitals.owner;
             }
         }
 
+        SortAndClamp(detectedEnemies, maxEnemyMarkers);
+    }
+
+    /// <summary>
+    /// Rockets in the air within range, from the rocket registry.
+    ///
+    /// Rockets carry no collider - they sweep for their own hits - so there is nothing for a
+    /// physics query to find. This is why the radar appeared to work and showed nothing.
+    /// </summary>
+    private void ScanRockets(float range)
+    {
+        detectedProjectiles.Clear();
+        detectedSet.Clear();
+
+        var rockets = Game.Weapons.Rocket.Active;
+        float rangeSqr = range * range;
+
+        for (int i = 0; i < rockets.Count; i++)
+        {
+            var rocket = rockets[i];
+
+            if (rocket == null)
+            {
+                continue;
+            }
+
+            // Your own rocket is not a contact. It leaves from your muzzle and flies away from
+            // you, so marking it as a threat means the one marker you must react to spends most
+            // of the match showing your own shots - and you learn to ignore it.
+            if (IsOwnRocket(rocket))
+            {
+                continue;
+            }
+
+            Transform t = rocket.transform;
+
+            if ((t.position - playerPosition).sqrMagnitude > rangeSqr)
+            {
+                continue;
+            }
+
+            if (detectedSet.Add(t))
+            {
+                detectedProjectiles.Add(t);
+            }
+        }
+
+        SortAndClamp(detectedProjectiles, maxProjectileMarkers);
+    }
+
+    /// <summary>
+    /// Whether this rocket came from the local player.
+    ///
+    /// Unknown counts as hostile: a rocket whose shooter has not replicated yet shows for a frame
+    /// or two. Erring that way is correct - a marker that appears late on your own shot is noise,
+    /// a marker that appears late on someone else's is a death.
+    /// </summary>
+    private bool IsOwnRocket(Game.Weapons.Rocket rocket)
+    {
+        if (selfVitals == null)
+        {
+            return false;
+        }
+
+        var shooter = rocket.FiredBy;
+        var me = selfVitals.owner;
+
+        return shooter.HasValue && me.HasValue && shooter.Value == me.Value;
+    }
+
+    private void SortAndClamp(List<Transform> results, int maxCount)
+    {
         // Sort closest-first (for priority clamping)
         results.Sort((a, b) =>
         {
@@ -474,9 +598,11 @@ public class RingRadarController : MonoBehaviour
             Vector3 ringNormal = Vector3.Cross(sideways, dir).normalized;
             Quaternion rotation = Quaternion.LookRotation(dir, ringNormal);
 
-            // Color — projectiles are always high threat
+            // Always red, never ramped. A rocket at 80m and a rocket at 10m call for the same
+            // reaction - move - and the yellow a distant one used to draw read as "noted" rather
+            // than "incoming". Distance is still legible from the ring radius and marker scale.
             float closeness = 1f - normalizedDistance;
-            Color color = Color.Lerp(suspiciousColor, dangerColor, closeness);
+            Color color = dangerColor;
 
             float scale = Mathf.Lerp(farMarkerScale, closeMarkerScale, closeness);
 
@@ -557,13 +683,17 @@ public class RingRadarController : MonoBehaviour
                 marker = enemyPool.Get();
                 marker.Activate(target);
                 activeEnemyMarkers[target] = marker;
-                // Start a ping so the ring briefly appears
-                enemyPingTimers[target] = newEnemyPingDuration;
-                enemyPingVisibility[target] = 1f;
             }
             else if (marker.IsFading)
             {
                 marker.CancelFade();
+            }
+
+            // Named on every pass, not just on creation: pooled markers are reused between
+            // players, so a recycled marker would keep whoever it labelled last.
+            if (enemyOwners.TryGetValue(target, out var namedOwner) && namedOwner.HasValue)
+            {
+                marker.SetLabel(Game.Networking.PlayerPalette.NameOf(namedOwner.Value));
             }
         }
 
@@ -580,51 +710,16 @@ public class RingRadarController : MonoBehaviour
                 out Color col, out float scale, out float normDist,
                 out Vector3 axis1, out Vector3 axis2, out float radius);
 
+            // The player's own colour replaces the distance ramp. Distance is already carried by
+            // the ring's radius and the marker's scale - spending colour on it too left all four
+            // opponents the same hue, so the ring told you something was there but never who.
+            if (enemyOwners.TryGetValue(target, out var owner) && owner.HasValue)
+            {
+                col = Game.Networking.PlayerPalette.ColorOf(owner.Value);
+            }
+
             kvp.Value.UpdateMarker(pos, rot, col, scale, normDist, ringAlpha);
             kvp.Value.UpdateRing(ringCenter, axis1, axis2, radius, col, ringAlpha, emissionIntensity);
-        }
-    }
-
-    // =============================================
-    //  Ping timers
-    // =============================================
-
-    private void UpdatePingTimers()
-    {
-        toRemove.Clear();
-        var keys = new List<Transform>(enemyPingTimers.Keys);
-        for (int i = 0; i < keys.Count; i++)
-        {
-            Transform key = keys[i];
-            if (key == null || !activeEnemyMarkers.ContainsKey(key))
-            {
-                toRemove.Add(key);
-                continue;
-            }
-
-            float timer = enemyPingTimers[key] - Time.deltaTime;
-            enemyPingTimers[key] = timer;
-
-            if (timer > 0f)
-            {
-                enemyPingVisibility[key] = 1f;
-            }
-            else
-            {
-                float vis = enemyPingVisibility[key];
-                vis = Mathf.MoveTowards(vis, 0f, pingFadeSpeed * Time.deltaTime);
-                enemyPingVisibility[key] = vis;
-                if (vis <= 0f)
-                {
-                    toRemove.Add(key);
-                }
-            }
-        }
-
-        for (int i = 0; i < toRemove.Count; i++)
-        {
-            enemyPingTimers.Remove(toRemove[i]);
-            enemyPingVisibility.Remove(toRemove[i]);
         }
     }
 
@@ -633,60 +728,18 @@ public class RingRadarController : MonoBehaviour
     // =============================================
 
     /// <summary>
-    /// Returns a 0-1 threat level for an enemy based on awareness and fire range.
-    /// 0 = unaware/safe, 0.5 = suspicious, 1 = fully aware / in fire range.
+    /// Returns a 0-1 threat level for a contact: 0 safe, 1 dangerous.
+    ///
+    /// Purely distance now. The PvE version asked each enemy archetype how aware of you it was -
+    /// stealth perception, battleship awareness, turret line of sight - which has no counterpart
+    /// in versus: every opponent is always aware of you, so the only thing proximity tells you is
+    /// how little time you have. Those branches also tied the radar to the parked prototype enemy
+    /// code, which the roadmap says not to build on.
     /// </summary>
     private float ComputeThreatLevel(Transform target)
     {
-        // Stealth enemy: use perception awareness
-        EnemyPerception perception = target.GetComponent<EnemyPerception>();
-        if (perception != null)
-        {
-            return perception.CurrentAwareness;
-        }
-
-        // Battleship: use awareness from controller
-        BattleshipController battleship = target.GetComponent<BattleshipController>();
-        if (battleship != null)
-        {
-            if (battleship.IsAware)
-            {
-                return 1f;
-            }
-            float dist = Vector3.Distance(playerPosition, target.position);
-            float outerRange = battleship.awarenessRange * 2f;
-            if (dist < outerRange)
-            {
-                return Mathf.InverseLerp(outerRange, battleship.awarenessRange, dist) * 0.5f;
-            }
-            return 0f;
-        }
-
-        // Turret: only show danger color if the turret can actually see the player
-        EnemyShooterSimple turret = target.GetComponentInChildren<EnemyShooterSimple>();
-        if (turret != null)
-        {
-            float dist = Vector3.Distance(playerPosition, target.position);
-
-            // Check if the player is visible to enemies
-            bool playerVisible = playerHealth == null || playerHealth.isVisible;
-
-            if (dist <= turret.detectionRange && playerVisible)
-            {
-                return 1f;
-            }
-            // Ramp up from 0 to 0.5 as approaching detection range (within 2x range)
-            float outerRange = turret.detectionRange * 2f;
-            if (dist < outerRange)
-            {
-                return Mathf.InverseLerp(outerRange, turret.detectionRange, dist) * 0.5f;
-            }
-            return 0f;
-        }
-
-        // Fallback: use distance-based approximation
-        float fallbackDist = Vector3.Distance(playerPosition, target.position);
-        return 1f - Mathf.Clamp01(Mathf.InverseLerp(minDistance, maxDistance, fallbackDist));
+        float distance = Vector3.Distance(playerPosition, target.position);
+        return 1f - Mathf.Clamp01(Mathf.InverseLerp(minDistance, maxDistance, distance));
     }
 
     private Color ThreatToColor(float threat)

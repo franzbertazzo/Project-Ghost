@@ -8,10 +8,10 @@ public class PlayerInputHandler : MonoBehaviour
 
     [Header("Input Values (Read-Only)")]
     public Vector2 MoveInput { get; private set; }      // WASD
-    public float VerticalInput { get; private set; }    // Space/Ctrl
+    public float VerticalInput { get; private set; }    // Space (up) / Ctrl (down)
     public Vector2 LookInput { get; private set; }      // Mouse
     public float RollInput { get; private set; }        // Q/E
-    public bool IsBraking { get; private set; }         // Shift
+    public bool IsBraking { get; private set; }         // Middle mouse (radar)
 
     public void OnMove(InputAction.CallbackContext context)
     {

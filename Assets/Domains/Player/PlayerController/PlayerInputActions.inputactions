@@ -61,6 +61,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Rocket",
+                    "type": "Button",
+                    "id": "9b1c4f2a-7d35-4e68-a1c0-5f2e9d4b7a31",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Shoot",
                     "type": "Button",
                     "id": "c3b3885e-796f-4609-b554-74df0c38264e",
@@ -140,7 +149,7 @@
                 {
                     "name": "negative",
                     "id": "52b998bb-b16e-4489-8ae0-c69c47ac6334",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -206,7 +215,7 @@
                 {
                     "name": "",
                     "id": "e33f9253-a5a6-4571-b4e8-597aa044c48a",
-                    "path": "<Keyboard>/ctrl",
+                    "path": "<Mouse>/middleButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -217,11 +226,22 @@
                 {
                     "name": "",
                     "id": "f916cd76-c5b4-40e8-b688-d2bcff4864ca",
-                    "path": "<Mouse>/rightButton",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3c7a5e91-62b4-4d0f-8e73-a9d15c284b60",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Rocket",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

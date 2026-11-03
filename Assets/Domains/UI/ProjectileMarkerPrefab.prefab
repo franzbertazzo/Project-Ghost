@@ -48,7 +48,7 @@ MonoBehaviour:
   label: {fileID: 0}
   ringSegments: 64
   ringLineWidth: 0.02
-  indicatorRenderer: {fileID: 0}
+  indicatorRenderer: {fileID: 7151059985008540813}
   fadeSpeed: 3
   pulseSpeed: 8
   pulseMinAlpha: 0.3
@@ -63,6 +63,18 @@ PrefabInstance:
     - target: {fileID: 4028410859139718709, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
       propertyPath: m_Name
       value: Indicator
+      objectReference: {fileID: 0}
+    - target: {fileID: 4845829404015048973, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.12495
+      objectReference: {fileID: 0}
+    - target: {fileID: 4845829404015048973, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.12495
+      objectReference: {fileID: 0}
+    - target: {fileID: 4845829404015048973, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.12495
       objectReference: {fileID: 0}
     - target: {fileID: 4845829404015048973, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
       propertyPath: m_LocalPosition.x
@@ -112,5 +124,10 @@ PrefabInstance:
 --- !u!4 &3731620083741950933 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4845829404015048973, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
+  m_PrefabInstance: {fileID: 8139896351645416152}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &7151059985008540813 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1426255361305937493, guid: 4eefec5b2d7eb3648a2b45d9dfe6d357, type: 3}
   m_PrefabInstance: {fileID: 8139896351645416152}
   m_PrefabAsset: {fileID: 0}

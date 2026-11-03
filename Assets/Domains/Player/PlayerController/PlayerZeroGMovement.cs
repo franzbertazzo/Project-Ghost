@@ -11,6 +11,46 @@ public class PlayerZeroGMovement : MonoBehaviour
     // Fired immediately after a dash is applied: (worldSpaceDirection, isSurfaceDash)
     public event System.Action<Vector3, bool> OnDashPerformed;
 
+    /// <summary>
+    /// Forces precision/brake mode from outside the input system, without disabling this script.
+    ///
+    /// Used while charging the heavy attack: the player keeps control and can still manoeuvre,
+    /// but at braked speed and acceleration. Disabling movement entirely made charging far too
+    /// punishing in a four-player fight, and froze the booster visuals with it.
+    /// </summary>
+    public bool ExternalBrake { get; set; }
+
+    [Header("Launch (knockback)")]
+    [Tooltip("Seconds of launch state per metre/second of launch speed. This is what lets a " +
+             "knockback actually travel: while launched, the arcade brake and speed cap are off.")]
+    public float launchStunPerSpeed = 0.022f;
+
+    [Tooltip("Launches slower than this do not stun at all, so chip damage from the laser shoves " +
+             "you without taking control away.")]
+    public float minLaunchSpeedForStun = 18f;
+
+    [Tooltip("Hard ceiling on the launch state, so a huge hit cannot leave you a passenger for " +
+             "ten seconds.")]
+    public float maxLaunchStun = 2.5f;
+
+    [Tooltip("Fraction of normal acceleration you keep while launched. Smash's directional " +
+             "influence: enough to steer toward a wall to kick off, not enough to cancel the hit.")]
+    [Range(0f, 1f)]
+    public float launchDriftControl = 0.25f;
+
+    /// <summary>
+    /// True while being thrown by a hit.
+    ///
+    /// The arcade movement is built to erase momentum it did not ask for - directionalBrake kills
+    /// "unwanted" velocity at 18/sec and a soft cap drags anything over maxSpeed (12) back down.
+    /// That is right for flying and fatal for knockback: a 50 m/s launch was gone inside a tenth
+    /// of a second, which is why percentage appeared to do nothing however high the numbers went.
+    /// While this is set, both are suspended and the hit is allowed to carry you.
+    /// </summary>
+    public bool IsLaunched => launchStunTimer > 0f;
+
+    private float launchStunTimer;
+
     [SerializeField] private CameraFOVPunch cameraFOVPunch; // Optional reference for dash FOV effect
 
     [Header("References")]
@@ -40,7 +80,7 @@ public class PlayerZeroGMovement : MonoBehaviour
     public float thrustPower = 10f;
     public float brakeForce = 5f;
 
-    [Header("Precision / Brake Mode (Shift)")]
+    [Header("Radar / Brake Mode (middle mouse)")]
     public float precisionSpeedMultiplier = 0.4f;   // 40% speed
     public float precisionBrakeMultiplier = 2.5f;   // stronger braking
     public float precisionAccelerationMultiplier = 0.6f;
@@ -57,7 +97,6 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     [Header("Dash Strength")]
     public float surfaceDashSpeed = 18f;
-    public float airDashSpeed = 10f;
 
     [Header("Surface Dash Behavior")]
     [Tooltip("Dot-product threshold to distinguish rebound/escape from glide")]
@@ -145,7 +184,14 @@ public class PlayerZeroGMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (_isSticking)
+        // Checked first: a launch overrides sticking to a surface and any dash grace still
+        // running, because being hit should interrupt whatever you were doing.
+        if (launchStunTimer > 0f)
+        {
+            launchStunTimer -= Time.fixedDeltaTime;
+            ApplyLaunchDrift();
+        }
+        else if (_isSticking)
         {
             ApplyStickMagnet();
         }
@@ -159,13 +205,91 @@ public class PlayerZeroGMovement : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Throws this player, and suspends arcade control for long enough that the throw lands.
+    ///
+    /// Duration scales with the resulting speed, so the percentage system reads the way it should:
+    /// a light hit shoves you and you fly on, a heavy one at high percentage takes you away and
+    /// you watch the boundary approach. Below minLaunchSpeedForStun there is no stun at all, so
+    /// laser chip damage never steals control.
+    /// </summary>
+    public void ApplyLaunch(Vector3 impulse)
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        // A stuck player has the magnet holding them to a surface; without this they absorb the
+        // hit into the wall and barely move.
+        _isSticking = false;
+        dashGraceTimer = 0f;
+
+        rb.linearVelocity += impulse;
+
+        float speed = rb.linearVelocity.magnitude;
+        if (speed < minLaunchSpeedForStun)
+        {
+            return;
+        }
+
+        // Takes the longer of the two rather than overwriting: a second hit mid-flight should
+        // never shorten the launch already in progress.
+        launchStunTimer = Mathf.Max(launchStunTimer,
+            Mathf.Min(maxLaunchStun, speed * launchStunPerSpeed));
+    }
+
+    /// <summary>Clears the launch state, for respawns.</summary>
+    public void ClearLaunch()
+    {
+        launchStunTimer = 0f;
+    }
+
+    /// <summary>
+    /// Directional influence while launched: thrust, but no braking and no speed cap.
+    ///
+    /// Without any control a launch is a cutscene you watch; with full control it is not a launch.
+    /// A quarter of normal acceleration lets a good player angle toward a surface to kick off
+    /// before the boundary, which is the recovery skill this mechanic is supposed to create.
+    /// </summary>
+    private void ApplyLaunchDrift()
+    {
+        if (inputHandler == null || cameraRig == null || launchDriftControl <= 0f)
+        {
+            return;
+        }
+
+        Vector3 inputVector = new Vector3(
+            inputHandler.MoveInput.x,
+            inputHandler.VerticalInput,
+            inputHandler.MoveInput.y
+        );
+
+        if (inputVector.sqrMagnitude < 0.001f)
+        {
+            return;
+        }
+
+        inputVector = Vector3.ClampMagnitude(inputVector, 1f);
+
+        Vector3 desiredDirection =
+            cameraRig.right   * inputVector.x +
+            cameraRig.up      * inputVector.y +
+            cameraRig.forward * inputVector.z;
+
+        rb.linearVelocity += desiredDirection * acceleration * launchDriftControl * Time.fixedDeltaTime;
+    }
+
     void Update()
     {
         RechargeDashCharges();
         UpdateChainTimer();
         UpdateStickWindow();
 
-        if (inputHandler != null && inputHandler.DashPressed)
+        // No dashing out of a launch. A dash writes rb.linearVelocity outright, so allowing one
+        // here would let a player delete any knockback the instant it landed - and with it the
+        // entire percentage system. The stun is the window where you cannot save yourself.
+        if (inputHandler != null && inputHandler.DashPressed && !IsLaunched)
         {
             if (_isSticking)
                 ReleaseStickDash();
@@ -258,7 +382,9 @@ public class PlayerZeroGMovement : MonoBehaviour
             cameraRig.forward * inputVector.z;
 
         // 3️⃣ Precision mode (Shift)
-        bool precision = inputHandler.IsBraking;
+        // Either the player holding brake, or something else asking for it - charging the heavy
+        // attack forces precision mode rather than freezing the player outright.
+        bool precision = inputHandler.IsBraking || ExternalBrake;
 
         float speedCap = precision
             ? maxSpeed * precisionSpeedMultiplier
@@ -375,8 +501,13 @@ public class PlayerZeroGMovement : MonoBehaviour
         }
 
         AdvanceChain();
+        ConsumeDashCharge();
         ApplyDashImpulse(dashDir, dashSpeed);
         OnDashPerformed?.Invoke(dashDir, true);
+
+        // Moved here from the old air dash, which was the only path that punched the FOV. Deleting
+        // that path would otherwise have taken the dash's only piece of camera feedback with it.
+        cameraFOVPunch?.TriggerDashFOV();
     }
 
     // --------------------------------------------------
@@ -410,24 +541,30 @@ public class PlayerZeroGMovement : MonoBehaviour
     // --------------------------------------------------
     // SURFACE DASH (Tangent-Based + Rebound Control)
     // --------------------------------------------------
+    /// <summary>
+    /// Surfaces only. There is no mid-air dash any more.
+    ///
+    /// It used to be both: a kick off a nearby surface, free and unlimited, or a free-flight dash
+    /// along your current velocity that cost a charge. That made the charges a resource you spent
+    /// in open space and the surfaces a thing you did for nothing, which is backwards for an arena
+    /// built out of surfaces to kick off. Now the charges are the cost of the surface kick, so the
+    /// three of them are a budget for how much you can redirect before you have to coast - and
+    /// open space is genuinely open, with nothing to do in it but carry the momentum you already
+    /// have.
+    ///
+    /// The charge is checked here and spent in <see cref="ReleaseStickDash"/>, so sticking to a
+    /// surface you cannot afford to kick off is not possible.
+    /// </summary>
     void TrySurfaceDash()
     {
-        if (TryGetSurface(out Vector3 surfaceNormal))
-        {
-            // Enter stick window instead of dashing immediately
-            EnterStickWindow(surfaceNormal);
+        if (currentDashCharges <= 0)
             return;
-        }
 
-        Vector3 velocity = rb.linearVelocity;
-        if (currentDashCharges <= 0 || velocity.sqrMagnitude < 0.01f) return;
+        if (!TryGetSurface(out Vector3 surfaceNormal))
+            return;
 
-        LastDashWasSurface = false;
-        LastSurfaceNormal = Vector3.zero;
-        ApplyDashImpulse(velocity.normalized, airDashSpeed);
-        OnDashPerformed?.Invoke(velocity.normalized, false);
-        ConsumeDashCharge();
-        cameraFOVPunch?.TriggerDashFOV();
+        // Enter stick window instead of dashing immediately
+        EnterStickWindow(surfaceNormal);
     }
 
     Vector3 GetCameraRelativeInput()

@@ -625,7 +625,16 @@ namespace LiteNetLib
                     if (incomingData.TimeWhenGet <= time)
                     {
                         DebugMessageReceived(incomingData.Data, incomingData.EndPoint);
-                        _pingSimulationList.RemoveAt(i);
+
+                        // PROJECT-GHOST LOCAL PATCH (re-apply if PurrNet is updated).
+                        // Dispatch happens while holding the lock, and locks are re-entrant, so a
+                        // packet that reaches Stop() clears this list mid-iteration and the
+                        // RemoveAt below runs off the end. Guarded rather than restructured: this
+                        // method runs on both the UpdateLogic thread and the main thread via
+                        // PollEvents, and the lock is what keeps them apart.
+                        if (i < _pingSimulationList.Count)
+                            _pingSimulationList.RemoveAt(i);
+
                         i--;
                     }
                 }

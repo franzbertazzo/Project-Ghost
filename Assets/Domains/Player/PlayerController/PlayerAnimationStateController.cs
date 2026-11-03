@@ -1,9 +1,20 @@
 using UnityEngine;
+using PurrNet;
 
 public class PlayerAnimationStateController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Animator animator;
+
+    /// <summary>
+    /// Optional. When present, state changes are routed through it so other players see them.
+    ///
+    /// Float parameters need no help: NetworkAnimator polls the Animator each tick and replicates
+    /// changes on its own. A CrossFade is a state change rather than a parameter, so it only
+    /// travels if it is called on the NetworkAnimator instead of the raw Animator - otherwise
+    /// remote players keep their idle pose through every dash.
+    /// </summary>
+    [SerializeField] private NetworkAnimator networkAnimator;
     [SerializeField] private PlayerInputHandler inputHandler;
     [SerializeField] private PlayerZeroGMovement movement;
 
@@ -27,6 +38,8 @@ public class PlayerAnimationStateController : MonoBehaviour
     {
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
+        if (networkAnimator == null)
+            networkAnimator = GetComponentInChildren<NetworkAnimator>();
         if (inputHandler == null)
             inputHandler = GetComponent<PlayerInputHandler>();
         if (movement == null)
@@ -73,7 +86,12 @@ public class PlayerAnimationStateController : MonoBehaviour
         if (!isSurface || animator == null) return;
 
         Vector3 localDir = transform.InverseTransformDirection(worldDir);
-        animator.CrossFadeInFixedTime(GetDashStateName(localDir), 0.05f);
+        string state = GetDashStateName(localDir);
+
+        if (networkAnimator != null)
+            networkAnimator.CrossFadeInFixedTime(state, 0.05f);
+        else
+            animator.CrossFadeInFixedTime(state, 0.05f);
     }
 
     private string GetDashStateName(Vector3 localDir)
