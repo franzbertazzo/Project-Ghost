@@ -63,6 +63,23 @@ namespace Game.Networking
             HandleChanged(_nickname.value);
         }
 
+        /// <summary>
+        /// Sets the name from the host, for a player with no client to set it.
+        ///
+        /// A bot's body is owned by a bot PlayerID, so <c>isOwner</c> is false on every peer and
+        /// the usual owner-writes path never fires. The host is the controller of a bot-owned
+        /// object - <c>isController</c> falls through to <c>isServer</c> when the owner has no
+        /// connection - so it is the one that may write, and this is the only way the name gets
+        /// onto the wire for a bot.
+        /// </summary>
+        public void SetNicknameFromHost(string name)
+        {
+            if (!isController)
+                return;
+
+            _nickname.value = PlayerNames.Sanitise(name);
+        }
+
         private void PublishLocalName()
         {
             // The owner is the only peer that knows what this player typed.

@@ -310,7 +310,15 @@ namespace Game.Networking
             if (direction.sqrMagnitude < 0.0001f)
                 direction = Random.onUnitSphere;
 
-            LaunchOwner(owner ?? default, direction.normalized * force);
+            var impulse = direction.normalized * force;
+
+            // A bot's owner is a PlayerID with no connection behind it, so a TargetRpc addressed
+            // to it is delivered nowhere - which is why a bot sat perfectly still through rocket
+            // hits. The host is the peer simulating it, so it applies the impulse itself.
+            if (owner.HasValue && owner.Value.isBot)
+                ApplyLaunchLocally(impulse);
+            else
+                LaunchOwner(owner ?? default, impulse);
 
             // Separate from the launch itself, which is a TargetRpc because only the owner may
             // move an owner-authoritative body. The trail has to be seen by everyone, so it needs
@@ -386,6 +394,11 @@ namespace Game.Networking
         /// </summary>
         [TargetRpc]
         private void LaunchOwner(PlayerID player, Vector3 impulse)
+        {
+            ApplyLaunchLocally(impulse);
+        }
+
+        private void ApplyLaunchLocally(Vector3 impulse)
         {
             EnsureBody();
 

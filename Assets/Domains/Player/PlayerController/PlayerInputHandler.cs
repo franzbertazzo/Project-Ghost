@@ -13,6 +13,25 @@ public class PlayerInputHandler : MonoBehaviour
     public float RollInput { get; private set; }        // Q/E
     public bool IsBraking { get; private set; }         // Middle mouse (radar)
 
+    /// <summary>
+    /// Writes the same values a device would, for a bot.
+    ///
+    /// A bot drives the real rig rather than a flight model of its own, so this is the seam: the
+    /// movement script cannot tell the difference, and every bit of movement tuning done for
+    /// players applies to bots for free. DashPressed is set rather than assigned, so a false here
+    /// never cancels a press made this frame - LateUpdate still owns clearing it.
+    /// </summary>
+    public void Drive(Vector2 move, float vertical, float roll, bool braking, bool dash)
+    {
+        MoveInput = move;
+        VerticalInput = vertical;
+        RollInput = roll;
+        IsBraking = braking;
+
+        if (dash)
+            DashPressed = true;
+    }
+
     public void OnMove(InputAction.CallbackContext context)
     {
         MoveInput = context.ReadValue<Vector2>();

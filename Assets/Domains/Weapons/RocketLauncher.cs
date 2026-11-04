@@ -52,14 +52,14 @@ namespace Game.Weapons
 
         [Tooltip("Beyond this distance enemies cannot be locked, however well centred. Also what " +
                  "turns the reticle red, so the circle only promises a lock it can actually " +
-                 "deliver. At 35 m/s a rocket crosses this in a bit over a second - far enough to " +
-                 "lock someone across a room, close enough that homing forgives your aim rather " +
-                 "than doing the aiming. Anything further is a straight shot you have to lead.")]
+                 "deliver. At 30m a rocket is airborne for under a second: close enough that " +
+                 "the lock forgives your aim rather than doing the aiming, and anything further " +
+                 "is a straight shot you lead yourself - or a dumb seeker if it drifts near one.")]
         // Renamed from `lockRange` on purpose: the prefab carries `lockRange: 20` from the last
         // time this was tuned, and Unity binds serialized values by name - so changing only the
         // default here would have been overridden by the prefab, exactly as it was the first time
         // this value was cut. A new name has no stale value to inherit.
-        [SerializeField] private float lockDistance = 40f;
+        [SerializeField] private float lockDistance = 30f;
 
         [Header("Aim Assist (laser)")]
         [Tooltip("Bend the laser onto an enemy inside the reticle circle. Off makes the light " +
@@ -382,6 +382,87 @@ namespace Game.Weapons
                 _cooldownEndsAt = Time.time + heavyCooldown;
                 TryFire();
             }
+        }
+
+        /// <summary>True when a heavy could be charged right now. Read by bots.</summary>
+        public bool HeavyAvailable => !_heavyOnCooldown.value;
+
+        /// <summary>
+        /// Host-side charge and fire, for a bot.
+        ///
+        /// The owner paths are gated on isOwner and a bot has no owner to be - but the economy is
+        /// not bypassed, which is the point. Holding this brakes the bot through the same
+        /// ExternalBrake a player pays, the shot only exists once the full windup has elapsed, and
+        /// letting go early throws it away. A bot that could fire heavies for free would not be
+        /// playing the game the player is playing.
+        ///
+        /// Returns true while the windup is still running, so the caller knows it is committed.
+        /// </summary>
+        public bool HoldRocketFromHost()
+        {
+            if (!isServer || !isSpawned)
+                return false;
+
+            if (_vitals != null && !_vitals.Vitals.IsAlive)
+            {
+                ReleaseRocketFromHost();
+                return false;
+            }
+
+            if (_heavyOnCooldown.value)
+            {
+                ReleaseRocketFromHost();
+                return false;
+            }
+
+            if (_holdStartedAt < 0f)
+                _holdStartedAt = Time.time;
+
+            SetBraking(true);
+            return !IsFullyCharged;
+        }
+
+        /// <summary>
+        /// Lets go. Fires if the windup completed, discards it otherwise - the same all-or-nothing
+        /// rule a player gets.
+        /// </summary>
+        public void ReleaseRocketFromHost()
+        {
+            if (!isServer)
+                return;
+
+            bool ready = IsFullyCharged;
+
+            _holdStartedAt = -1f;
+            SetBraking(false);
+
+            if (!ready || _heavyOnCooldown.value)
+                return;
+
+            _cooldownEndsAt = Time.time + heavyCooldown;
+            FireFromHost();
+        }
+
+        /// <summary>
+        /// The spawn itself, host-side. Mirrors TryFire without its isOwner gate: the lock is
+        /// resolved here because the host is the one holding the bot's aim, and RequestFire is a
+        /// ServerRpc being invoked on the server, so it simply executes.
+        /// </summary>
+        private void FireFromHost()
+        {
+            if (Time.time < _nextFireTime)
+                return;
+
+            if (firePoint == null || !TryGetAimRay(out var origin, out var direction))
+                return;
+
+            _nextFireTime = Time.time + fireInterval;
+
+            ApplyRecoil(direction);
+            PlayMuzzleFlash(origin, direction);
+
+            var target = FindLockTarget(origin, direction);
+            RequestFire(origin, direction, target ?? default, target.HasValue);
         }
 
         /// <summary>

@@ -20,6 +20,20 @@ public class PlayerZeroGMovement : MonoBehaviour
     /// </summary>
     public bool ExternalBrake { get; set; }
 
+    /// <summary>
+    /// Asks for a dash on the next Update, for a bot.
+    ///
+    /// A latch rather than the input handler's DashPressed flag, because that flag is set in Update
+    /// and cleared in LateUpdate while this script *reads* it in Update - so whether a dash asked
+    /// for by code was ever seen came down to the undefined order of two components' Update calls.
+    /// A player gets away with it because their press arrives from the input system's own phase;
+    /// code does not, which is why bots appeared never to dash. A latch read-and-cleared here is
+    /// order-independent.
+    /// </summary>
+    public void RequestDash() => _dashRequested = true;
+
+    private bool _dashRequested;
+
     [Header("Launch (knockback)")]
     [Tooltip("Seconds of launch state per metre/second of launch speed. This is what lets a " +
              "knockback actually travel: while launched, the arcade brake and speed cap are off.")]
@@ -286,10 +300,15 @@ public class PlayerZeroGMovement : MonoBehaviour
         UpdateChainTimer();
         UpdateStickWindow();
 
+        // Latched requests are read here and cleared whether or not they are used, so a dash asked
+        // for by code is never held over into a later frame.
+        bool requested = _dashRequested;
+        _dashRequested = false;
+
         // No dashing out of a launch. A dash writes rb.linearVelocity outright, so allowing one
         // here would let a player delete any knockback the instant it landed - and with it the
         // entire percentage system. The stun is the window where you cannot save yourself.
-        if (inputHandler != null && inputHandler.DashPressed && !IsLaunched)
+        if (((inputHandler != null && inputHandler.DashPressed) || requested) && !IsLaunched)
         {
             if (_isSticking)
                 ReleaseStickDash();

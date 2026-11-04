@@ -55,10 +55,36 @@ namespace Game.Weapons
         [SerializeField] private float knockbackScaling = 1.3f;
 
         [Header("Homing")]
-        [Tooltip("Degrees per second the rocket can turn toward its target. This is the dial that " +
-                 "decides whether dodging still works: high enough and no dash escapes, which " +
-                 "would undo the core skill the design is built on.")]
-        [SerializeField] private float turnRateDegrees = 90f;
+        [Tooltip("Degrees per second a LOCKED rocket can turn. This is the dial that decides " +
+                 "whether dodging still works: high enough and no dash escapes, which would undo " +
+                 "the core skill the design is built on.")]
+        // Turn radius, not turn rate, is what decides whether a rocket tracks: at speed 35 this is
+        // speed / (rate in radians). 90 deg/s is a 22m circle - wider than half the island, so it
+        // could not follow anyone who moved. 280 was about 7m and read as unavoidable. 150 is about
+        // 13m: a locked rocket visibly hunts without being able to sit on a target.
+        [SerializeField] private float turnRateDegrees = 150f;
+
+        [Tooltip("Degrees per second an UNLOCKED rocket can turn. Every rocket seeks now, but one " +
+                 "fired without a lock is a dumb seeker: it will drift onto whoever is ahead of it " +
+                 "and can be out-turned by anyone who notices, which is what keeps the lock worth " +
+                 "earning.")]
+        [SerializeField] private float seekTurnRateDegrees = 90f;
+
+        [Tooltip("Half-angle of the seeker head. An unlocked rocket only acquires what is roughly " +
+                 "ahead of it - without this it would U-turn off the muzzle and hunt backwards, " +
+                 "which no missile does and which would make firing one a hazard to yourself.")]
+        [Range(5f, 90f)]
+        [SerializeField] private float seekConeDegrees = 55f;
+
+        [Tooltip("How far an unlocked seeker can see. Deliberately much shorter than the locked " +
+                 "homing range and shorter than the lock range itself: an unlocked rocket is not " +
+                 "aware of the arena, it notices someone it gets close to.")]
+        [SerializeField] private float seekRange = 35f;
+
+        [Tooltip("Layers that block a seeker's sight. Arena geometry, not players - an unlocked " +
+                 "rocket cannot acquire through a wall, and loses whatever it had when one comes " +
+                 "between them.")]
+        [SerializeField] private LayerMask sightBlockers = 1 << 6;
 
         [Tooltip("Seconds after launch before homing engages, so a rocket does not curl back into " +
                  "the shooter at point blank.")]
@@ -144,6 +170,13 @@ namespace Game.Weapons
                 ? homingTarget.GetComponentInParent<Game.Networking.PlayerVitals>()
                 : null;
 
+            // Whether this rocket was aimed or merely pointed. A locked rocket turns hard for the
+            // whole flight; an unlocked one is a seeker that has to find something itself and turns
+            // at the old lazy rate when it does. Recorded once, because a seeker that acquired a
+            // target must not graduate to lock-grade agility - the lock is the thing you earn by
+            // holding the reticle on someone, and it has to stay worth earning.
+            _locked = homingTarget != null;
+
             PublishShooter();
         }
 
@@ -172,17 +205,28 @@ namespace Game.Weapons
         /// </summary>
         private void Steer(float deltaTime)
         {
-            if (_homingTarget == null || _age < homingDelay)
+            if (_age < homingDelay)
                 return;
 
             // Death does not destroy the body - the match system reuses it - so a lock acquired on
             // someone who then dies would keep steering toward an invisible corpse parked wherever
-            // they fell. That is the "rocket curves toward nothing" case: drop the lock instead.
+            // they fell. That is the "rocket curves toward nothing" case: drop the target instead.
+            // A seeker then looks for another; a locked rocket flies on straight, because its lock
+            // was a decision the shooter made and inventing a replacement would not be.
             if (_targetVitals != null && !_targetVitals.Vitals.IsAlive)
             {
                 _homingTarget = null;
-                return;
+                _targetVitals = null;
             }
+
+            // Seekers re-run this every frame, not only when empty: the point of an unlocked rocket
+            // is that it is not aware of the arena, so it has to keep *earning* the target it has
+            // and lose it the moment the target goes out of sight or out of range.
+            if (!_locked)
+                Seek();
+
+            if (_homingTarget == null)
+                return;
 
             Vector3 toTarget = _homingTarget.position - transform.position;
             float distance = toTarget.magnitude;
@@ -190,10 +234,108 @@ namespace Game.Weapons
             if (distance > homingMaxRange || distance < 0.01f)
                 return;
 
+            float rate = _locked ? turnRateDegrees : seekTurnRateDegrees;
+
             var desired = Quaternion.LookRotation(toTarget / distance);
             transform.rotation = Quaternion.RotateTowards(
-                transform.rotation, desired, turnRateDegrees * deltaTime);
+                transform.rotation, desired, rate * deltaTime);
         }
+
+        /// <summary>
+        /// Finds something to chase, for a rocket fired without a lock.
+        ///
+        /// Every rocket seeks now, so a shot taken without holding the reticle on anyone still
+        /// drifts onto whoever is ahead of it. What it does not get is the locked rocket's turn
+        /// rate: an unlocked seeker is out-turned by anyone who notices it, which is what keeps the
+        /// lock worth earning rather than making the aim pointless.
+        ///
+        /// Constrained to a cone ahead rather than the nearest enemy anywhere. A seeker head sees
+        /// forwards; without that limit a rocket would U-turn off the muzzle and hunt backwards,
+        /// which would make firing one a hazard to its own shooter.
+        ///
+        /// Re-run periodically rather than once, so a seeker that loses its target finds another,
+        /// but not per frame - this walks every player and the rocket lives for seconds.
+        /// </summary>
+        private void Seek()
+        {
+            if (Time.time < _nextSeek)
+                return;
+
+            // Throttled because this walks every player and casts a ray per candidate, and the
+            // rocket lives for seconds. Fast enough that losing sight costs a fifth of a second.
+            _nextSeek = Time.time + 0.2f;
+
+            // The target it already has has to keep qualifying. Break sight or open the range and
+            // the seeker forgets you - which is real counterplay, and the thing that separates
+            // "notices someone nearby" from "is aware of the arena".
+            if (_homingTarget != null && !CanSee(_targetVitals))
+            {
+                _homingTarget = null;
+                _targetVitals = null;
+            }
+
+            if (_homingTarget != null)
+                return;
+
+            float bestDot = Mathf.Cos(seekConeDegrees * Mathf.Deg2Rad);
+
+            foreach (var candidate in Game.Networking.PlayerVitals.All)
+            {
+                if (!CanSee(candidate))
+                    continue;
+
+                Vector3 toCandidate = candidate.MarkerPosition - transform.position;
+                float distance = toCandidate.magnitude;
+
+                // Most centred rather than nearest: a seeker locks what it is looking at, and
+                // "nearest" would have it swing onto someone off to the side it could never reach.
+                float dot = Vector3.Dot(transform.forward, toCandidate / distance);
+                if (dot <= bestDot)
+                    continue;
+
+                bestDot = dot;
+                _homingTarget = candidate.BodyTransform;
+                _targetVitals = candidate;
+            }
+        }
+
+        /// <summary>
+        /// Whether an unlocked seeker can actually see this player right now: alive, close, inside
+        /// the seeker cone, and with nothing solid in the way.
+        ///
+        /// Used for acquiring and for keeping, which is deliberate - a single test means a seeker
+        /// can never hold a target it would not have been allowed to acquire.
+        /// </summary>
+        private bool CanSee(Game.Networking.PlayerVitals candidate)
+        {
+            if (candidate == null || !candidate.isSpawned || !candidate.Vitals.IsAlive)
+                return false;
+
+            // Never the shooter. A seeker that could acquire its own launcher would turn the heavy
+            // attack into a way to kill yourself.
+            if (_firedBy.HasValue && candidate.owner.HasValue &&
+                candidate.owner.Value == _firedBy.Value)
+                return false;
+
+            Vector3 toCandidate = candidate.MarkerPosition - transform.position;
+            float distance = toCandidate.magnitude;
+
+            if (distance > seekRange || distance < 0.01f)
+                return false;
+
+            Vector3 direction = toCandidate / distance;
+
+            if (Vector3.Dot(transform.forward, direction) <= Mathf.Cos(seekConeDegrees * Mathf.Deg2Rad))
+                return false;
+
+            // Pulled up short of the body so the player's own collider does not count as the thing
+            // blocking sight of them.
+            return !Physics.Raycast(transform.position, direction,
+                Mathf.Max(0.01f, distance - 1f), sightBlockers, QueryTriggerInteraction.Ignore);
+        }
+
+        private bool _locked;
+        private float _nextSeek;
 
         private void Update()
         {

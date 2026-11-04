@@ -646,6 +646,170 @@ ring-outs became the win condition.
     mid-air. Also called from `HandleDied` *before* the body is hidden: the trail is an
     instantiated child, not one of the renderers `SetVisible` toggles, so a corpse would otherwise
     have kept smoking on the spawn point it gets parked on.
+- [x] **Bot opponent** (`Assets/Domains/Bots/`). Flies 6DoF, avoids geometry, picks and tracks a
+  target, and shoots. **Note this is outside the locked launch scope** — CLAUDE.md lists "enemy AI
+  archetypes" as explicitly out, and versus-only is a locked decision — so it is here on an
+  explicit request, and justified inside that scope by the fact that *combat could not be tested
+  alone at all*: every weapon change so far needed two MPPM instances, which is why several of them
+  were wrong in ways nobody noticed for a while.
+  - **Drives the real rig, not a flight model of its own.** `BotController` writes the values a
+    device would into `PlayerInputHandler.Drive`, and aims by rotating the camera rig transform. So
+    a bot inherits the actual momentum, brake and surface-dash behaviour, and movement tuning done
+    for players applies to it unchanged. A bespoke flight model would have been easier to write and
+    would have made every movement change a thing to port twice.
+  - The aim trick: a bot's camera rig GameObject is inactive (nothing should render from it), but a
+    disabled GameObject's transform can still be rotated and `GetComponentInChildren<Camera>(true)`
+    still finds the camera on it — so the weapons aim correctly with no second camera anywhere.
+  - **`BotProfile` splits personality from difficulty**, because they answer different questions:
+    personality is what the opponent *wants* (aggression, caution, preferred range, strafe bias),
+    difficulty is how well it manages it (aim error, turn rate, reaction time, rocket discipline,
+    dash skill). That split is what lets a ladder share a personality across tiers and vary only
+    skill — a cast of characters rather than a row of sliders — and it makes "aggressive but bad"
+    expressible, which is most of what makes a low tier fun. `Bot_Brawler` and `Bot_Circler` ship
+    as contrasting examples.
+  - Steering sums range-holding, orbiting and avoidance rather than prioritising them, which is
+    what produces curved approaches that read as flying; with no floor and no navmesh there is
+    nothing to path along anyway. Avoidance probes along *velocity*, not facing — in 6DoF those are
+    routinely unrelated, and probing where it looks would miss every wall it is about to hit — and
+    it slides along the surface rather than reflecting, so a corridor does not bounce it.
+  - `Blaster.FireFromHost` is a host-side firing path, since a bot has no owner to be and the
+    claim-and-validate dance exists to compensate for a view the host does not have.
+  - `NetworkPlayer` gating is bot-aware: a bot needs the parts a local player needs to *move* but
+    none of the parts it needs to *see*, and those two lists differ — hence `drives` alongside
+    `mine` rather than treating bots as local.
+  - **Bots are real players, and PurrNet already supported it.** `PlayerID` carries an `isBot` flag
+    and `PlayersManager.CreateBot()` registers a genuine id, adds it to the connected players list
+    and fires the same joined event a connection does. So the integration was already written — for
+    players: the spawner gives a bot a body and ownership through the normal path, `MatchManager`
+    scores and respawns it, `PlayerPalette` names and colours it, kill credit names it, and the
+    boundary rings it out. `PlayerSpawner.SpawnUnowned` was deleted as a second spawn path that
+    turned out to be unnecessary.
+    - The reason it works is `isController => hasConnectedOwner ? isOwner : isServer`. A bot has no
+      connection, so the *host* is the controller of a bot-owned body — which is what makes its
+      transform replicate and its teleports force-sync with no special case. But `isOwner` is still
+      false on every peer, which is why the gating needed `drives` alongside `mine`.
+    - `IdentityModule.SetNicknameFromHost` puts the profile's name on the wire, since a bot has no
+      client to write its own; the roster tags it `bot` straight off `PlayerID.isBot`.
+  - **Added from the warmup screen**: host-only `[B]`/`[N]`, shown in the key line only when a
+    `BotDirector` with a roster exists. Warmup only — a bot joining mid-round would arrive with no
+    score history and, in Elimination, as an extra life in a round already being decided. Removal
+    goes through `KickPlayer`, so PurrNet unwinds the player properly rather than the body being
+    destroyed under the match's feet.
+  - **Fixed: adding one bot started the match, so a second could never be added.** `CountPlayers`
+    served both auto-start and the round-decided check, and `autoStartPlayers` is 2 — so the first
+    bot took the count to 2, the match left Lobby, and the bot keys are Lobby-only. Split into
+    `CountHumans` for auto-start and `CountPlayers` for round decisions, which is also the right
+    semantics: auto-start exists so a group of *people* need not coordinate a keypress, while a bot
+    is unmistakably a combatant once a round is running. The warmup's "starts on its own in N more"
+    counts humans to match.
+  - **Fixed: bots spawned, aimed and fired, but never moved — including under rocket hits.** One
+    root cause, two symptoms, and it was the authority model rather than the brain.
+    - The player prefab's `NetworkTransform` is **owner-authoritative**, which is right for a
+      person. A bot's owner is a PlayerID with no connection, so nobody drove it — and worse, the
+      host's own NetworkTransform ran in *receive* mode, sleeping the Rigidbody and overwriting the
+      position the movement script was setting. Aiming and firing kept working because neither goes
+      through the transform, which is exactly why it looked like a broken brain. Bot bodies are now
+      switched to server authority at spawn, **before** ownership is granted — `isController` is
+      cached and recomputed in `OnOwnerChanged`, so doing it after would have left the host on the
+      wrong side of the cache.
+    - Knockback was a `[TargetRpc]` addressed to the owner. For a bot that is delivered nowhere, so
+      it sat perfectly still through rocket blasts. The host applies the impulse directly when the
+      owner `isBot`.
+    - `_ownerAuth` is `[SerializeField, PurrLock] private` with only a getter, so this needs
+      reflection: it is a per-instance decision and the same prefab serves people and bots. Logs an
+      error naming the cause if PurrNet ever renames the field, rather than silently going back to
+      stationary bots.
+    - `BotController` also now asserts that movement and the input handler are enabled rather than
+      trusting the gating order — the brain is attached in the same frame the body spawns, so
+      whether `NetworkPlayer`'s cached gating saw a bot depended on a race, and losing it produced
+      the same "aims but never moves" picture.
+  - **Fixed: bots bashed around the level because they steered toward a *direction*.** Thrusting
+    full-tilt along a wish direction is fine where friction brakes for you; in zero-g with momentum
+    conservation it can only ever add speed, so every approach overshot and every obstacle became a
+    ricochet. CLAUDE.md calls managing your own momentum the core skill, and a bot that never
+    brakes is not playing the game. `Steer` now returns a target **velocity** and `ApplyMovement`
+    thrusts along `wish - current`: coasting, braking and hard turns all fall out of the same
+    subtraction. It also holds the brake when the correction mostly means *stop*, which trebles
+    directional braking and is the only way to shed momentum quickly.
+  - **Avoidance went from one probe to a five-whisker fan**, and speed is now capped by how boxed
+    in it is. A corridor is mostly walls that are *beside* you, so something casting only dead
+    ahead discovers them by collision; each whisker contributes its surface normal weighted by
+    nearness, so a narrow space pushes it down the middle instead of bouncing it off one side. The
+    speed cap is what lets it arrive somewhere tight already slow enough to turn inside it. The
+    fan builds around the look direction when nearly stationary, so it still knows it is in a
+    corner while holding still.
+  - **Rocket turn rate 90 → 185 deg/s.** Turn *radius* is what decides whether a rocket tracks:
+    at speed 35, 90 deg/s is a 22m circle — wider than half the island, so it could not follow
+    anyone who moved. 280 was tried first, at roughly 7m, and read as unavoidable; 185 sits between
+    them at about 11m, visibly curving after a target without being able to sit on one, which is
+    the dodgeable-but-threatening the design asks for. Serialized in `Rocket.prefab`, so the prefab
+    value was the one that mattered. `homingMaxRange` 120 → 160.
+  - **Every rocket seeks now; the lock buys awareness and agility.** A locked rocket knows where
+    its target is for the whole flight and turns at 150 deg/s (~13m radius, down from the 185 that
+    read as too strong). An unlocked one is a dumb seeker, and deliberately not aware of the arena:
+    - It only notices a player **within `seekRange` (35m — half the lock range), inside a 55°
+      seeker cone ahead of it, and in clear line of sight** of arena geometry.
+    - It **keeps having to qualify**: `CanSee` is used both to acquire and to hold, re-run on a
+      0.2s cadence, so breaking sight or opening the range makes the seeker forget you. Putting
+      geometry between yourself and an unlocked rocket is real counterplay rather than a hope.
+    - It turns at the old lazy 90 deg/s (~22m), so it drifts onto the inattentive and is out-turned
+      by anyone who notices it.
+    - The cone is load-bearing: without it a seeker would U-turn off the muzzle and hunt backwards,
+      making the heavy a hazard to its own shooter. It never targets `_firedBy` for the same reason.
+    - `_locked` is recorded once at `Configure`, so a seeker that acquires does *not* graduate to
+      lock-grade agility or awareness. A locked rocket whose target dies flies straight rather than
+      inventing a replacement the shooter never chose; a seeker looks for another.
+  - Lock distance: raised 20 → 40 → 70m across iterations, then settled back at **40m**. At 40m a
+    rocket is airborne for a bit over a second, so the lock forgives your aim rather than doing it.
+    Note `seekRange` (35m) now sits just inside this, so the gap between "locked" and "ignored" is
+    narrow — beyond 40m a shot is a lead you take yourself, with a dumb seeker as the consolation.
+  - **Bots fly like aircraft now, which is what made the turn readable.** Two coupled changes: the
+    nose follows the *flight* direction when that disagrees with where the target is, swinging onto
+    the target only once they roughly agree; and thrust is forward-dominant (`lateralThrust` 0.35)
+    rather than freely holonomic. Either change alone makes it worse — pointing at the target while
+    thrusting sideways is precisely what let them satisfy any correction without ever changing
+    where they pointed, so they slid around and never appeared to turn. Together they have to turn
+    to go anywhere, and bringing the guns round after the turn is dogfight behaviour rather than a
+    limitation.
+  - **Fixed: bots never dashed, for two independent reasons.**
+    - `DashPressed` is set in Update and cleared in `LateUpdate`, but the movement *reads* it in
+      Update — so whether a press made from code was seen came down to the undefined order of two
+      components' Update calls. A player gets away with it because their press arrives from the
+      input system's own phase. Added `PlayerZeroGMovement.RequestDash()`, a latch read-and-cleared
+      inside the movement's own Update, which is order-independent.
+    - The proximity test probed a 3.5m sphere while the movement only finds surfaces within
+      `surfaceCheckRadius` (1.2m), so most presses were made where the movement would find nothing
+      and silently do nothing. It now asks the movement's own question with the movement's own
+      radius and mask, so a press is only made when it will actually produce a dash.
+  - **Bots fire rockets, and pay the same economy.** `HoldRocketFromHost` / `ReleaseRocketFromHost`
+    mirror the owner paths without their `isOwner` gate, but nothing is bypassed: holding brakes
+    the bot through the same `ExternalBrake` a player pays, the shot exists only at full charge,
+    and letting go early throws it away. A bot that got heavies for free would not be playing the
+    game the player is playing. `rocketDiscipline` is the willingness to bet three braked seconds
+    on a moving target; the decision is made once per attempt rather than re-rolled per frame, or a
+    low-discipline bot would charge constantly in useless bursts. Charging suppresses its laser,
+    and a bot that dies mid-windup releases explicitly — `ExternalBrake` survives death, so
+    otherwise it would respawn permanently slowed, the same trap the launcher's own death check
+    exists to avoid.
+  - **Fixed: three bots flocked and circled each other instead of fighting the player.**
+    `AcquireTarget` took the *nearest* enemy, and for each bot in a group the nearest enemy is
+    another bot — so they converged into a knot and orbited. Target choice is now scored:
+    `botPreference` (2.5) means another bot has to be two and a half times closer than a person
+    before it is worth preferring, plus stickiness on the current target so they stop swapping
+    every time two candidates trade places a metre apart.
+  - **Bots roam when they have nobody to fight** instead of holding still, which read as broken.
+  - **Aim drifts rather than snapping.** The error direction is still re-rolled on the reaction
+    clock, but the aim now eases toward it — previously the target orientation jumped every
+    interval and the rig chased a teleporting point, which is what made it look like a cursor being
+    flicked by a script rather than a hand tracking and not quite keeping up.
+  - **Still not done:** bots do not seek cover — `caution` makes them disengage along the target
+    vector, but nothing looks for geometry to put between itself and a shooter. Their spine also
+    does not aim, since `Aim` needs a live camera.
+- [ ] Single-player ladder (Quake-3-style, 30 levels and characters) — **not started, and much
+  larger than the bot.** It needs arena content at a volume that contradicts "arenas are hand-built
+  and few", a character roster against a tight animation budget, and bot identity in the match
+  layer first. `BotDirector` is the seam a ladder would drive, choosing profiles per level, rather
+  than something it would replace.
 - [ ] Character differentiation, if it survives the animation budget (open question).
 - [x] **"KILLED BY <name>"** on the victim's screen, in the killer's palette colour, for 4s under
   the banner line. A ring-out with nobody to credit says **OUT OF BOUNDS** instead of blaming a

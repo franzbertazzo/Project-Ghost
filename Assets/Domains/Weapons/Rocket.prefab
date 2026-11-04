@@ -60,9 +60,9 @@ MonoBehaviour:
   killRadius: 4
   shoveRadius: 12
   shoveForce: 60
-  turnRateDegrees: 90
+  turnRateDegrees: 150
   homingDelay: 0.15
-  homingMaxRange: 120
+  homingMaxRange: 160
   collisionMask:
     serializedVersion: 2
     m_Bits: 4294967295

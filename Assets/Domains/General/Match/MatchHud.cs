@@ -34,6 +34,9 @@ namespace Game.Match
                  "arena can be flown while waiting. Available to everyone, not just the host.")]
         [SerializeField] private KeyCode hidePanelKey = KeyCode.Tab;
 
+        [SerializeField] private KeyCode addBotKey = KeyCode.B;
+        [SerializeField] private KeyCode removeBotKey = KeyCode.N;
+
         /// <summary>
         /// Left column is the binding, right column is what it does. Hardcoded rather than read
         /// back from the input asset: the asset has no display names, and generating "leftShift"
@@ -92,6 +95,20 @@ namespace Game.Match
 
             _wasAlive = alive;
         }
+
+        /// <summary>
+        /// The bot director, if the scene has one. Optional on purpose: a build with no bots should
+        /// simply not show the keys rather than need the component wired.
+        /// </summary>
+        private Game.Bots.BotDirector Bots()
+        {
+            if (_bots == null)
+                _bots = FindFirstObjectByType<Game.Bots.BotDirector>();
+
+            return _bots;
+        }
+
+        private Game.Bots.BotDirector _bots;
 
         private Game.Networking.PlayerVitals LocalVitals()
         {
@@ -189,6 +206,16 @@ namespace Game.Match
 
                 case MatchState.Lobby when Input.GetKeyDown(modeKey):
                     _match.CycleRules();
+                    break;
+
+                // Warmup only. A bot joining mid-round would arrive with no score history and, in
+                // Elimination, as an extra life in a round already being decided.
+                case MatchState.Lobby when Input.GetKeyDown(addBotKey):
+                    Bots()?.AddBot();
+                    break;
+
+                case MatchState.Lobby when Input.GetKeyDown(removeBotKey):
+                    Bots()?.RemoveBot();
                     break;
 
                 case MatchState.MatchEnd when Input.GetKeyDown(rematchKey):
@@ -395,8 +422,16 @@ namespace Game.Match
                     PlayerPalette.NameOf(vitals.owner), MenuSkin.Body, colour,
                     TextAnchor.MiddleLeft);
 
-                if (vitals.isOwner)
-                    MenuSkin.Text(new Rect(row.x + 20f, y, row.width - 20f, lineHeight), "you",
+                // "bot" comes straight off PlayerID.isBot - PurrNet carries the flag, so nothing
+                // here has to track which of these players is which.
+                string tag = vitals.isOwner
+                    ? "you"
+                    : vitals.owner.HasValue && vitals.owner.Value.isBot
+                        ? "bot"
+                        : null;
+
+                if (tag != null)
+                    MenuSkin.Text(new Rect(row.x + 20f, y, row.width - 20f, lineHeight), tag,
                         MenuSkin.Small, MenuSkin.Dim, TextAnchor.MiddleRight);
 
                 y += lineHeight;
@@ -438,13 +473,27 @@ namespace Game.Match
 
             if (_match.LocalPlayerCanControlFlow)
             {
-                MenuSkin.Text(new Rect(row.x, y, row.width, 20f),
-                    $"[{KeyLabel(startKey)}] start now     [{KeyLabel(modeKey)}] change mode",
+                var bots = Bots();
+                string keys = $"[{KeyLabel(startKey)}] start now     [{KeyLabel(modeKey)}] change mode";
+
+                if (bots != null && bots.CanAdd)
+                    keys += $"     [{KeyLabel(addBotKey)}]/[{KeyLabel(removeBotKey)}] bots";
+
+                MenuSkin.Text(new Rect(row.x, y, row.width, 20f), keys,
                     MenuSkin.Small, MenuSkin.Key, TextAnchor.MiddleLeft);
 
                 if (rules != null && rules.autoStartPlayers > 0)
                 {
-                    int waiting = Mathf.Max(0, rules.autoStartPlayers - _roster.Count);
+                    // Counts humans, matching what auto-start actually waits for - showing the
+                    // roster total here would have promised a start that adding bots never brings.
+                    int humans = 0;
+                    foreach (var entry in _roster)
+                    {
+                        if (entry.owner.HasValue && !entry.owner.Value.isBot)
+                            humans++;
+                    }
+
+                    int waiting = Mathf.Max(0, rules.autoStartPlayers - humans);
 
                     MenuSkin.Text(new Rect(row.x, y, row.width, 20f),
                         waiting > 0

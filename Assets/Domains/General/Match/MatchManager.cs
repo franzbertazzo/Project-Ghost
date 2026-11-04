@@ -281,7 +281,11 @@ namespace Game.Match
             switch (_state)
             {
                 case MatchState.Lobby:
-                    if (rules.autoStartPlayers > 0 && CountPlayers() >= rules.autoStartPlayers)
+                    // Humans, not bodies. Auto-start exists so a group of people does not have to
+                    // coordinate a keypress; a bot needs no coordinating, and counting them meant
+                    // adding the first bot instantly started the match - which, since the bot keys
+                    // are warmup-only, made adding a second one impossible.
+                    if (rules.autoStartPlayers > 0 && CountHumans() >= rules.autoStartPlayers)
                         RequestStart();
                     break;
 
@@ -620,6 +624,10 @@ namespace Game.Match
             _scores[player] = score;
         }
 
+        /// <summary>
+        /// Everyone in the match, bots included. Used to decide whether a round *can* be decided -
+        /// a bot is a combatant, so one human and two bots is a decidable round.
+        /// </summary>
         private int CountPlayers()
         {
             int count = 0;
@@ -628,6 +636,29 @@ namespace Game.Match
             {
                 if (vitals != null && vitals.isSpawned)
                     count++;
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Connected people only. The counterpart to <see cref="CountPlayers"/>, and the difference
+        /// matters in exactly one place: auto-start waits for humans, because bots are added
+        /// deliberately by a host who then starts when they are ready.
+        /// </summary>
+        private int CountHumans()
+        {
+            int count = 0;
+
+            foreach (var vitals in PlayerVitals.All)
+            {
+                if (vitals == null || !vitals.isSpawned || !vitals.owner.HasValue)
+                    continue;
+
+                if (vitals.owner.Value.isBot)
+                    continue;
+
+                count++;
             }
 
             return count;

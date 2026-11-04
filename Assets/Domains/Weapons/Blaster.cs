@@ -155,6 +155,50 @@ namespace Game.Weapons
         }
 
         /// <summary>
+        /// Host-side firing, for a bot.
+        ///
+        /// A bot's body has no owner, so the normal <see cref="Fire"/> path refuses it - and the
+        /// claim-and-validate dance that path exists for would be pointless here anyway. The host
+        /// resolving against its own world *is* the authoritative answer; there is no stale view to
+        /// compensate for, because there is no view and no wire. So this resolves and applies
+        /// damage in one step, then broadcasts the bolt like any other.
+        /// </summary>
+        public void FireFromHost(Vector3 origin, Vector3 direction)
+        {
+            if (!isServer || !isSpawned || !CanFire)
+                return;
+
+            if (direction.sqrMagnitude < 0.0001f)
+                return;
+
+            direction.Normalize();
+            _nextFireTime = Time.time + fireInterval;
+
+            Vector3 end = origin + direction * range;
+            var claimed = default(PlayerID);
+            var bodyOffset = Vector3.zero;
+
+            if (TryGetFirstHit(origin, direction, out var hit, out var target))
+            {
+                end = hit.point;
+
+                if (target != null && target.Vitals.CanBeHit)
+                {
+                    target.TakeHit(damagePercent, direction, laserKnockback, laserKnockbackScaling,
+                        owner);
+
+                    if (target.owner.HasValue)
+                    {
+                        claimed = target.owner.Value;
+                        bodyOffset = end - target.MarkerPosition;
+                    }
+                }
+            }
+
+            ShowBolt(origin, end, claimed, bodyOffset);
+        }
+
+        /// <summary>
         /// The shooter's claim, checked rather than trusted.
         ///
         /// Favour-the-shooter, which is what every hitscan shooter does and the only thing that

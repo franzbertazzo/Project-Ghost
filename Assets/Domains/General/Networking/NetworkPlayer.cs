@@ -47,6 +47,18 @@ namespace Game.Networking
             ApplyOwnerGating();
         }
 
+        /// <summary>
+        /// Re-runs the gating after something about this body has changed.
+        ///
+        /// Needed because the gating caches its answer, and a bot's brain is attached *after* the
+        /// spawn - so the body would otherwise stay switched off as an unowned remote and drift.
+        /// </summary>
+        public void RefreshGating()
+        {
+            _gated = false;
+            ApplyOwnerGating();
+        }
+
         private void ApplyOwnerGating()
         {
             if (_gated)
@@ -55,7 +67,23 @@ namespace Game.Networking
             _gated = true;
             bool mine = isOwner;
 
-            name = mine ? "PlayerEntities [LOCAL]" : $"PlayerEntities [remote {owner}]";
+            // A bot's body has no owner, so every gate below would switch it off everywhere - the
+            // movement included, which would leave it drifting. The host drives it instead, so on
+            // the host it needs the parts a local player needs to *move*, and on no peer does it
+            // need the parts a local player needs to *see*: no camera rig, no radar, no device
+            // input. Those two lists differ, which is why this is not simply "treat bots as mine".
+            var bot = GetComponentInChildren<Game.Bots.BotController>(true);
+            bool botDriven = bot != null && isServer;
+            bool drives = mine || botDriven;
+
+            name = botDriven
+                ? $"PlayerEntities [bot {bot.Profile?.displayName ?? "unnamed"}]"
+                : mine
+                    ? "PlayerEntities [LOCAL]"
+                    : $"PlayerEntities [remote {owner}]";
+
+            if (bot != null)
+                bot.enabled = botDriven;
 
             var rig = ResolveCameraRig();
             if (rig != null)
@@ -64,7 +92,10 @@ namespace Game.Networking
             // Input. PlayerInput drives PlayerInputHandler through UnityEvents, and PlayerShooter
             // builds its own action asset, so all three have to be silenced independently.
             SetEnabled(GetComponentInChildren<PlayerInput>(true), mine);
-            SetEnabled(GetComponentInChildren<PlayerInputHandler>(true), mine);
+            // The one input the bot needs: the handler is the seam it writes into, so it has to run
+            // on the host. PlayerInput above stays off, which is what stops the host's own keyboard
+            // driving its bots as well as its player.
+            SetEnabled(GetComponentInChildren<PlayerInputHandler>(true), drives);
             SetEnabled(GetComponentInChildren<PlayerShooter>(true), mine);
 
             // The radar is a first-person aid; a remote player's copy would track the wrong things.
@@ -83,14 +114,14 @@ namespace Game.Networking
             // Trade-off: this also freezes the booster VFX on remote players, since UpdateBoosters
             // lives in the same script. Cheap to fix later by driving boosters from the synced
             // velocity; not worth leaving a physics fight in place for.
-            SetEnabled(GetComponentInChildren<PlayerZeroGMovement>(true), mine);
+            SetEnabled(GetComponentInChildren<PlayerZeroGMovement>(true), drives);
 
             // Animation state is replicated by NetworkAnimator, so the remote copies of the
             // controller must stop writing to the Animator. Left enabled they would set
             // MoveDirection from their own (dead) input every frame, overwriting the value that
             // just arrived from the owner - the animator would look synced and never move.
             foreach (var animationController in GetComponentsInChildren<PlayerAnimationStateController>(true))
-                animationController.enabled = mine;
+                animationController.enabled = drives;
 
             if (logGating)
             {

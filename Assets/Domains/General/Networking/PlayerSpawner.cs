@@ -133,6 +133,9 @@ namespace Game.Networking
                 return;
             }
 
+            if (player.isBot)
+                MakeServerAuthoritative(instance);
+
             StartCoroutine(GiveOwnershipWhenSpawned(identity, player));
 
             if (logSpawns)
@@ -143,6 +146,45 @@ namespace Game.Networking
 
         /// <summary>Raised on the host once a body exists for a player. Host-side only.</summary>
         public event System.Action<PlayerID, GameObject> OnPlayerSpawned;
+
+        /// <summary>
+        /// Switches a bot's body from owner-authority to server-authority.
+        ///
+        /// This is the difference between a bot that flies and one that sits still. The player
+        /// prefab's NetworkTransform is owner-authoritative, which is right for a person: their
+        /// client drives the body and the host validates. A bot's owner is a PlayerID with no
+        /// connection behind it, so nobody drives it - and worse, the host's own NetworkTransform
+        /// runs in *receive* mode, sleeping the Rigidbody and overwriting the position the movement
+        /// script is trying to set. The bot ends up frozen while still aiming and firing, because
+        /// those do not go through the transform.
+        ///
+        /// It is not enough to notice this at runtime: `isController` is cached, and the host would
+        /// still be on the wrong side of the cache. But the cache is recomputed in OnOwnerChanged,
+        /// so clearing the flag *before* ownership is granted lands correctly - which is why this
+        /// sits above the GiveOwnership coroutine rather than inside it.
+        ///
+        /// Reflection because `_ownerAuth` is `[SerializeField, PurrLock] private` with only a
+        /// getter: this is a per-instance decision that cannot be made in the prefab, since the
+        /// same prefab serves people and bots. The project already reaches into third-party
+        /// privates the same way for the latency simulator. If PurrNet ever exposes a setter, this
+        /// is a one-line replacement.
+        /// </summary>
+        private void MakeServerAuthoritative(GameObject body)
+        {
+            var field = typeof(PurrNet.NetworkTransform).GetField("_ownerAuth",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (field == null)
+            {
+                Debug.LogError("[PlayerSpawner] NetworkTransform._ownerAuth not found, so bot " +
+                               "bodies cannot be made server-authoritative - they will spawn and " +
+                               "then sit still. PurrNet's field may have been renamed.");
+                return;
+            }
+
+            foreach (var transform in body.GetComponentsInChildren<PurrNet.NetworkTransform>(true))
+                field.SetValue(transform, false);
+        }
 
         /// <summary>
         /// Host-side lookup, used by rocket homing to turn a target's PlayerID into a body.
